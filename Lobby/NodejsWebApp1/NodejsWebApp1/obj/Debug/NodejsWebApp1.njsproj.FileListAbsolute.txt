@@ -1,0 +1,4 @@
+C:\Users\Je-Mario\source\repos\NodejsWebApp1\NodejsWebApp1\obj\Debug\NodejsWebApp1.njsprojAssemblyReference.cache
+C:\Users\Je-Mario\source\repos\NodejsWebApp1\NodejsWebApp1\bin\Microsoft.NodejsTools.WebRole.dll
+C:\Users\Je-Mario\Documents\GitHub\ComicAtomic\Lobby\NodejsWebApp1\NodejsWebApp1\obj\Debug\NodejsWebApp1.njsprojAssemblyReference.cache
+C:\Users\Je-Mario\Documents\GitHub\ComicAtomic\Lobby\NodejsWebApp1\NodejsWebApp1\bin\Microsoft.NodejsTools.WebRole.dll
