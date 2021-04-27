@@ -15,6 +15,7 @@ else
 
 if(isset($_POST['User']) && isset($_POST['Password']))
 {
+	Header('Location: Lobby\NodejsWebApp1\NodejsWebApp1\public\index.html');
 	$mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 	
 	if (mysqli_connect_errno()) 

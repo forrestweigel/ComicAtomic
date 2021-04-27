@@ -129,7 +129,7 @@ Login
 		}
 		?>
 		
-		<image id = "myImage" src = "img/logo.jpg" width = 200, height = 200 draggable = "false"></image>
+		<image id = "myImage" src = "img/logo.png" width = 400, height = 200 draggable = "false"></image>
 		</br>
 		<form method = "post" action = "auth.php">
 			<input type = "text" name = "User" size = 40em placeholder = "Username" required></br></br>
