@@ -13,7 +13,7 @@ if($_POST['Password'] == $_POST['Password2'])
 	}
 	
 	$User = $mysqli->real_escape_string($_POST['User']);
-	$sql = "SELECT username FROM people";
+	$sql = "SELECT username FROM user";
 	$result = $mysqli->query($sql);
 	$row = $result->fetch_row();
 	
@@ -38,7 +38,7 @@ if($_POST['Password'] == $_POST['Password2'])
 		echo "Connect failed: " . mysqli_connect_error();
 	}
 	
-	if (!($stmt = $mysqli->prepare("INSERT INTO people (username, phash) VALUES (?, ?)"))) 
+	if (!($stmt = $mysqli->prepare("INSERT INTO user (username, password) VALUES (?, ?)"))) 
 	{
 		echo "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	}
@@ -60,7 +60,7 @@ if($_POST['Password'] == $_POST['Password2'])
 	$mysqli->close();
 	
 	$_SESSION["username"]=$User;	
-	header('Lobby\NodejsWebApp1\NodejsWebApp1\public\index.html');
+	header('Location: Lobby\NodejsWebApp1\NodejsWebApp1\public\index.html');
 }
 
 

@@ -15,8 +15,7 @@ else
 
 if(isset($_POST['User']) && isset($_POST['Password']))
 {
-	Header('Location: Lobby\NodejsWebApp1\NodejsWebApp1\public\index.html');
-	$mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
+$mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 	
 	if (mysqli_connect_errno()) 
 	{
@@ -25,7 +24,7 @@ if(isset($_POST['User']) && isset($_POST['Password']))
 	}
 	
 	$User = $mysqli->real_escape_string($_POST['User']);
-	$sql = "SELECT phash FROM people WHERE people.username = '$User'";
+	$sql = "SELECT password FROM user WHERE user.username = '$User'";
 	$result = $mysqli->query($sql);
 	
 	if($result->num_rows == 0)
@@ -39,7 +38,7 @@ if(isset($_POST['User']) && isset($_POST['Password']))
 	if (password_verify($_POST['Password'],$row[0])) 
 	{
 		$_SESSION["username"] = $User;
-		Header('Location: main.html');
+		Header('Location: Lobby\NodejsWebApp1\NodejsWebApp1\public\index.html');
 	}
 	
 	else 
