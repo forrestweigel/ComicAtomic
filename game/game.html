@@ -5,7 +5,7 @@
             {
                 position: absolute;
                 width:119px;
-                height:77px;
+                height:78px;
                 background:white;
                 cursor: move;
                 left: 1;
@@ -90,8 +90,11 @@
                 e = e || window.event;
                 e.preventDefault();
                 pos1 = 120*(Math.round((elmnt.offsetLeft) / 120));
-                pos2 = 78*(Math.round((elmnt.offsetTop) / 78));
-                pos2 -= 45;
+                pos2 = 79*(Math.round((elmnt.offsetTop) / 78));
+                pos2 += 45;
+                pos1 += 1;
+                if(pos2 > 598){pos2 = 598}   
+                if(pos1 > 601){pos2 = 601}
                 elmnt.style.top = pos2+ "px";
                 elmnt.style.left = pos1 + "px";
                 document.onmouseup = null;
