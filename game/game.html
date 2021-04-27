@@ -1,15 +1,15 @@
 <html>
     <head>    
         <style>
-            .small_ship
+            .card
             {
                 position: absolute;
-                width:43mm;
-                height:71mm;
+                width:119px;
+                height:77px;
                 background:white;
                 cursor: move;
-                left: 0;
-                top:0;
+                left: 1;
+                top:45;
                 transition-duration: .5s;
                 transition-timing-function: ease-in-out;
             }
@@ -20,8 +20,9 @@
                 margin-left: auto;
                 margin-right: auto;
                 width: 720;
-                height: 720;
-                background-image: "img/board.png";
+                height: 720;       
+                background: url("/ComicAtomic/img/board.png");
+                background-size: cover;
                 position: relative;
             }
         </style>
@@ -50,6 +51,11 @@
             dragElement(document.getElementById(card.id));
         }
 
+        function setSelect(card)
+        {
+            selectedCard = card;
+        }
+
         function dragElement(elmnt) //needs fixing
         {
             var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -57,7 +63,7 @@
             
             function dragMouseDown(e) 
             {           
-                document.getElementById(selectedShip).style.transitionDuration = "0s";
+                document.getElementById(selectedCard).style.transitionDuration = "0s";
                 var board = document.getElementById("board");
                 e = e || window.event;
                 e.preventDefault();
@@ -71,7 +77,7 @@
             {
                 e = e || window.event;
                 e.preventDefault();
-                pos1 = (pos3 - e.clientX );
+                pos1 = (pos3 - e.clientX);
                 pos2 = (pos4 - e.clientY );
                 pos3 = e.clientX; 
                 pos4 = e.clientY;
@@ -79,11 +85,19 @@
                 elmnt.style.left = ((elmnt.offsetLeft - pos1)) + "px";
             }
 
-            function closeDragElement() 
+            function closeDragElement(e) 
             {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = 120*(Math.round((elmnt.offsetLeft) / 120));
+                pos2 = 78*(Math.round((elmnt.offsetTop) / 78));
+                pos2 -= 45;
+                elmnt.style.top = pos2+ "px";
+                elmnt.style.left = pos1 + "px";
                 document.onmouseup = null;
                 document.onmousemove = null;
-            }          
+                selectedCard = null;
+              }          
         }
     </script>
 </html>
