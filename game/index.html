@@ -10,6 +10,9 @@
         type: Phaser.AUTO,
         width: 1000,
         height: 720,
+        cardW: 750,
+        cardH: 1125,
+        cardS: 0.105,
         scene: {
             preload: preload,
             create: create
@@ -20,47 +23,90 @@
 
     function preload ()
     {
-        this.load.image('logo', '/ComicAtomic/img/logo.png'); 
+        this.load.spritesheet("FFDeck", "/ComicAtomic/img/FFDeck.png", {frameWidth: config.cardW, frameHeight: config.cardH});
         this.load.image('board', '/ComicAtomic/img/board2.png'); 
+        this.load.image('discard', '/ComicAtomic/img/FFLogo.png');
     }
 
     function create ()
     {
-       this.add.image(500,360,'board');
-       moveCard(this);
-       moveCard(this);
+       this.bk = this.add.image(500,360,'board');
+       this.discard = this.add.text(930, 650, '$','Arial, 32px, strong, , , , white');
+       this.deck = Phaser.Utils.Array.NumberArray(0,28);
+       this.hand = Array();
+       this.energy = 0;
+
+       for(x = 0; x < 5; x++)
+       {
+           this.hand[x] = 0;
+       }
+       Phaser.Utils.Array.Shuffle(this.deck);
+       this.cardIdx = 0;
+       fillHand(this);
     }
 
-    function moveCard(game)
-    {      
-        var bg = game.add.image(0, 0, 'logo');
+    function fillHand(game)
+    {
+        for(x = 0; x < 5; x++)
+        {
+            if(game.hand[x] == 0)
+            {
+                var card = game.add.image(0, 0, "FFDeck", game.deck[game.cardIdx]);
+                var orginX = 0;
+                var orginY = 0;
+                card.setScale(config.cardS);
+                card.angle += -90;
+                game.cardIdx++;
 
-        var container = game.add.container(400, 300, [ bg ]);
+                var spot1 = game.add.container(70, 290 + (90 * x), [ card ]);
+                
+                spot1.setSize(card.width * config.cardS, card.height * config.cardS);
 
-        container.setSize(bg.width, bg.height);
+                spot1.setInteractive();
 
-        container.setInteractive();
+                game.input.setDraggable(spot1);
 
-        game.input.setDraggable(container);
+                game.input.on('drag', function (pointer, gameObject, dragX, dragY) {
 
-        container.on('pointerover', function () {
+                    gameObject.x = dragX;
+                    gameObject.y = dragY;
+                });
 
-            bg.setTint(0x44ff44);
+                game.input.on('dragend', function (pointer, gameObject)
+                {
+                    if(checkOverlap(gameObject, game.discard))
+                    {
+                        gameObject.destroy();
+                        game.energy += 1;
+                        game.discard.text = game.energy;
+                    }
 
-        });
+                    else if(!checkOverlap(gameObject, game.bk))
+                    {
+                        gameObject.x = orginX;
+                        gameObject.y = orginY;
+                    }
+                });
 
-        container.on('pointerout', function () {
+                game.input.on('dragstart', function (pointer, gameObject)
+                {
+                    orginX = gameObject.x;
+                    orginY = gameObject.y;
+                });
 
-            bg.clearTint();
+                game.hand[x] = 1;
+            }
+        }
+    }
 
-        });
+    function checkOverlap(sp1, sp2)
+    {
+        console.log(sp2)
+        var bounds1 = sp1.getBounds();
+        var bounds2 = sp2.getBounds();
+        
 
-        game.input.on('drag', function (pointer, gameObject, dragX, dragY) {
-
-            gameObject.x = dragX;
-            gameObject.y = dragY;
-
-        });
+        return Phaser.Geom.Intersects.RectangleToRectangle(bounds1, bounds2);
     }
 
     function update()
