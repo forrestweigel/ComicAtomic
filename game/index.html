@@ -12,9 +12,9 @@
         type: Phaser.AUTO,
         width: 1000,
         height: 720,
-        cardW: 750,
-        cardH: 1125,
-        cardS: 0.105,
+        cardW: 375,
+        cardH: 562.5,
+        cardS: 0.21,
         scene: {
             preload: preload,
             create: create
@@ -38,6 +38,17 @@
        this.deck = Phaser.Utils.Array.NumberArray(0,28);
        this.hand = Array();
        this.energy = 0;
+       this.board = 
+       [
+            [0,0,0,0,0,0]
+            [0,0,0,0,0,0]
+            [0,0,0,0,0,0]
+            [0,0,0,0,0,0]
+            [0,0,0,0,0,0]
+            [0,0,0,0,0,0]
+            [0,0,0,0,0,0]
+            [0,0,0,0,0,0]
+       ]
 
        for(x = 0; x < 5; x++)
        {
@@ -47,7 +58,34 @@
        Phaser.Utils.Array.Shuffle(this.deck);
        this.cardIdx = 0;
        fillHand(this);
+       setUp(this);
        endTurnBtn(this);
+    }
+
+    function setUp(game)
+    {
+        var num;
+        var x;
+        var y;
+
+        for(i = 0; i < 6; i++)
+        {
+            x = Math.floor(Math.random() * 5) + 1;
+            y = Math.floor(Math.random() * 3) + 5;
+            var card = game.add.image(0, 0, "FFDeck", i);
+            card.setScale(config.cardS);
+            card.angle += -90;
+
+            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card ]);
+            
+            set.name = i;
+
+            set.setSize(card.width * config.cardS, card.height * config.cardS);
+
+            set.setInteractive();
+
+            game.input.setDraggable(set);
+        }
     }
 
     function fillHand(game)
@@ -61,11 +99,12 @@
                 var orginY = 0;
                 card.setScale(config.cardS);
                 card.angle += -90;
-                game.cardIdx++;
 
                 game.hand[x] = game.add.container(70, 290 + (90 * x), [ card ]);
                 
-                game.hand[x].name = x;
+                game.hand[x].name = game.deck[game.cardIdx];
+                game.hand[x].val = x;
+                game.cardIdx++;
 
                 game.hand[x].setSize(card.width * config.cardS, card.height * config.cardS);
 
@@ -86,7 +125,7 @@
             if(checkOverlap(gameObject, game.discard))
             {
                 gameObject.destroy();
-                game.hand[gameObject.name] = null;
+                game.hand[gameObject.val] = null;
                 game.energy += 1;
                 game.discard.text = game.energy;
             }
@@ -99,15 +138,14 @@
             
             else 
             {
-                game.hand[gameObject.name] = null;
+                game.hand[gameObject.val] = null;
                 gameObject.x = (120*(Math.round((gameObject.x) / 120)) - 40);
-                gameObject.y = (79*(Math.round((gameObject.y) / 78)) + 4);
+                gameObject.y = (79*(Math.round((gameObject.y) / 79)) + 4);
             }
         });
 
         game.input.on('dragstart', function (pointer, gameObject)
         {
-            console.log(gameObject.name)
             orginX = gameObject.x;
             orginY = gameObject.y;
         });
