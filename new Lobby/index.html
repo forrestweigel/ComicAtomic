@@ -87,11 +87,20 @@
           
           };
           
+          //TODO GET EVENT LISTENERS
           $('#create').click(function(){
               var msg = "one";
 
               conn.send(JSON.stringify(msg));
 
+          });
+
+          document.getElementById("create").addEventListener("click", function () {
+               //document.getElementById("users").innerHTML += "LOLOLOL"
+                console.log("WORKS!!!");
+               var msg = "one";
+
+              conn.send(JSON.stringify(msg));
           });
 
 

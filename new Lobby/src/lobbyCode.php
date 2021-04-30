@@ -8,10 +8,12 @@ class lobbyCode implements MessageComponentInterface {
 
     public function __construct() {
         $this->clients = new \SplObjectStorage;
+        //make client array insteda of splobject
     }
 
     public function onOpen(ConnectionInterface $conn) {
         // Store the new connection to send messages to later
+        
         $this->clients->attach($conn);
 
         echo "New connection! ({$conn->resourceId})\n";
@@ -26,10 +28,10 @@ class lobbyCode implements MessageComponentInterface {
             , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
 
         foreach ($this->clients as $client) {
-            if ($from !== $client) {
+            //if ($from !== $client) {
                 // The sender is not the receiver, send to each client connected
                 $client->send($msg);
-            }
+           // }
         }
 
     }
