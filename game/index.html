@@ -26,6 +26,7 @@
     function preload ()
     {
         this.load.spritesheet("FFDeck", "/ComicAtomic/img/FFDeck.png", {frameWidth: config.cardW, frameHeight: config.cardH});
+        this.load.spritesheet("MMDeck", "/ComicAtomic/img/FFDeck.png", {frameWidth: config.cardW, frameHeight: config.cardH});
         this.load.image('board', '/ComicAtomic/img/board2.png'); 
         this.load.image('discard', '/ComicAtomic/img/FFLogo.png');
         this.load.image('logo', '/ComicAtomic/img/logo.png'); 
@@ -40,14 +41,12 @@
        this.energy = 0;
        this.board = 
        [
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0]
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
        ]
 
        for(x = 0; x < 5; x++)
@@ -73,7 +72,6 @@
 
         game.input.on('dragend', function (pointer, gameObject)
         {
-        console.log(gameObject.placed)
         if(checkOverlap(gameObject, game.discard) && gameObject.placed == false)
         {
             gameObject.destroy();
@@ -83,7 +81,7 @@
                 
             x = Math.round((originX) / 120);
             y = Math.round((originY) / 79);
-            game.board[x][y] = 0;
+            game.board[x - 2][y - 1] = 0;
         }
 
         else if(!checkOverlap(gameObject, game.bk))
@@ -99,16 +97,18 @@
             var x = Math.round((gameObject.x) / 120);
             var y = Math.round((gameObject.y) / 79);
 
-            
-            if(game.board[x][y] == 0)
+            console.log(x - 2);
+            console.log(y - 1);
+            console.log(game.board[x - 2][y - 1]);
+            if(game.board[x - 2][y - 1] == 0)
             {
-                game.board[x][y] = 1;
+                game.board[x - 2][y - 1] = 1;
                 gameObject.x = 120 * x - 40;
                 gameObject.y = 79 * y + 4;
                 
                 x = Math.round((originX) / 120);
                 y = Math.round((originY) / 79);
-                game.board[x][y] = 0;
+                game.board[x - 2][y - 1] = 0;
             }
 
             else
@@ -141,7 +141,7 @@
             card.setScale(config.cardS);
             card.angle += -90;
 
-            game.board[x][y] = 1;
+            game.board[x - 2][y - 1] = 1;
             var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card ]);
             
             set.name = i;
