@@ -12,9 +12,9 @@
         type: Phaser.AUTO,
         width: 1000,
         height: 720,
-        cardW: 750,
-        cardH: 1125,
-        cardS: 0.105,
+        cardW: 375,
+        cardH: 562.5,
+        cardS: 0.21,
         scene: {
             preload: preload,
             create: create
@@ -26,6 +26,7 @@
     function preload ()
     {
         this.load.spritesheet("FFDeck", "/ComicAtomic/img/FFDeck.png", {frameWidth: config.cardW, frameHeight: config.cardH});
+        this.load.spritesheet("MMDeck", "/ComicAtomic/img/FFDeck.png", {frameWidth: config.cardW, frameHeight: config.cardH});
         this.load.image('board', '/ComicAtomic/img/board2.png'); 
         this.load.image('discard', '/ComicAtomic/img/FFLogo.png');
         this.load.image('logo', '/ComicAtomic/img/logo.png'); 
@@ -38,6 +39,15 @@
        this.deck = Phaser.Utils.Array.NumberArray(0,28);
        this.hand = Array();
        this.energy = 0;
+       this.board = 
+       [
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+       ]
 
        for(x = 0; x < 5; x++)
        {
@@ -47,7 +57,102 @@
        Phaser.Utils.Array.Shuffle(this.deck);
        this.cardIdx = 0;
        fillHand(this);
+       setUp(this);
        endTurnBtn(this);
+       movement(this);
+    }
+
+    function movement(game)
+    {
+        game.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+
+        gameObject.x = dragX;
+        gameObject.y = dragY;
+        });
+
+        game.input.on('dragend', function (pointer, gameObject)
+        {
+        if(checkOverlap(gameObject, game.discard) && gameObject.placed == false)
+        {
+            gameObject.destroy();
+            game.hand[gameObject.val] = null;
+            game.energy += 1;
+            game.discard.text = game.energy;
+                
+            x = Math.round((originX) / 120);
+            y = Math.round((originY) / 79);
+            game.board[x - 2][y - 1] = 0;
+        }
+
+        else if(!checkOverlap(gameObject, game.bk))
+        {
+            gameObject.x = originX;
+            gameObject.y = originY;
+        }
+
+        else 
+        {
+            game.hand[gameObject.val] = null;
+            gameObject.placed = true;
+            var x = Math.round((gameObject.x) / 120);
+            var y = Math.round((gameObject.y) / 79);
+
+            console.log(x - 2);
+            console.log(y - 1);
+            console.log(game.board[x - 2][y - 1]);
+            if(game.board[x - 2][y - 1] == 0)
+            {
+                game.board[x - 2][y - 1] = 1;
+                gameObject.x = 120 * x - 40;
+                gameObject.y = 79 * y + 4;
+                
+                x = Math.round((originX) / 120);
+                y = Math.round((originY) / 79);
+                game.board[x - 2][y - 1] = 0;
+            }
+
+            else
+            {        
+                gameObject.x = originX;
+                gameObject.y = originY;
+            }
+        }
+        });
+
+        game.input.on('dragstart', function (pointer, gameObject)
+        {
+        originX = gameObject.x;
+        originY = gameObject.y;
+        });
+    }
+
+    function setUp(game)
+    {
+        var num;
+        var x;
+        var y;
+
+        for(i = 0; i < 6; i++)
+        {
+            x = Math.floor(Math.random() * 5) + 2;
+            y = Math.floor(Math.random() * 4) + 5;
+
+            var card = game.add.image(0, 0, "FFDeck", i);
+            card.setScale(config.cardS);
+            card.angle += -90;
+
+            game.board[x - 2][y - 1] = 1;
+            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card ]);
+            
+            set.name = i;
+            set.placed = true;
+
+            set.setSize(card.width * config.cardS, card.height * config.cardS);
+
+            set.setInteractive();
+
+            game.input.setDraggable(set);
+        }
     }
 
     function fillHand(game)
@@ -57,15 +162,17 @@
             if(game.hand[x] == null)
             {
                 var card = game.add.image(0, 0, "FFDeck", game.deck[game.cardIdx]);
-                var orginX = 0;
-                var orginY = 0;
+                var originX = 0;
+                var originY = 0;
                 card.setScale(config.cardS);
                 card.angle += -90;
-                game.cardIdx++;
 
                 game.hand[x] = game.add.container(70, 290 + (90 * x), [ card ]);
                 
-                game.hand[x].name = x;
+                game.hand[x].name = game.deck[game.cardIdx];
+                game.hand[x].val = x;
+                game.hand[x].placed = false;
+                game.cardIdx++;
 
                 game.hand[x].setSize(card.width * config.cardS, card.height * config.cardS);
 
@@ -74,49 +181,12 @@
                 game.input.setDraggable(game.hand[x]);
             }
         }   
-
-        game.input.on('drag', function (pointer, gameObject, dragX, dragY) {
-
-            gameObject.x = dragX;
-            gameObject.y = dragY;
-        });
-
-        game.input.on('dragend', function (pointer, gameObject)
-        {
-            if(checkOverlap(gameObject, game.discard))
-            {
-                gameObject.destroy();
-                game.hand[gameObject.name] = null;
-                game.energy += 1;
-                game.discard.text = game.energy;
-            }
-
-            else if(!checkOverlap(gameObject, game.bk))
-            {
-                gameObject.x = orginX;
-                gameObject.y = orginY;
-            }
-            
-            else 
-            {
-                game.hand[gameObject.name] = null;
-                gameObject.x = (120*(Math.round((gameObject.x) / 120)) - 40);
-                gameObject.y = (79*(Math.round((gameObject.y) / 78)) + 4);
-            }
-        });
-
-        game.input.on('dragstart', function (pointer, gameObject)
-        {
-            console.log(gameObject.name)
-            orginX = gameObject.x;
-            orginY = gameObject.y;
-        });
     }
 
     function checkOverlap(sp1, sp2)
     {
         var bounds1 = sp1.getBounds();
-        var bounds2 = sp2.getBounds();        
+        var bounds2 = sp2.getBounds();   
 
         return Phaser.Geom.Intersects.RectangleToRectangle(bounds1, bounds2);
     }
@@ -144,7 +214,6 @@
 
         endBtn.on('pointerdown', function () {
 
-            console.log("werein")
             fillHand(game);
 
         });
