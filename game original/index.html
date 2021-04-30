@@ -7,22 +7,6 @@
 
     <script>
 
-    var conn = new WebSocket('ws://localhost:1337');
-    conn.onopen = function(e) {
-    console.log("connection established!");
-    }
-
-    conn.onmessage = function(e) {
-    
-    var msg = JSON.parse(e.data);
-
-    if(msg == "one")
-    {   
-        console.log("success")
-    }
-
-    
-    };
 
     var config = {
         type: Phaser.AUTO,
@@ -106,10 +90,6 @@
             x = Math.round((originX) / 120);
             y = Math.round((originY) / 79);
             game.board[x - 2][y - 1] = 0;
-
-            var msg = "one";
-            conn.send(JSON.stringify(msg));
-
         }
 
         else if(!checkOverlap(gameObject, game.bk))
@@ -134,9 +114,6 @@
                 x = Math.round((originX) / 120);
                 y = Math.round((originY) / 79);
                 game.board[x - 2][y - 1] = 0;
-
-                var msg = "one";
-                conn.send(JSON.stringify(msg));
             }
 
             else
