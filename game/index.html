@@ -34,11 +34,18 @@
 
     function create ()
     {
+       this.input.mouse.disableContextMenu();
        this.bk = this.add.image(500,360,'board');
        this.discard = this.add.text(930, 650, '$','Arial, 80, , , , , white');
        this.deck = Phaser.Utils.Array.NumberArray(0,28);
        this.hand = Array();
        this.energy = 0;
+
+       this.die1 = this.add.text(930, 100, '','Arial, 80, , , , , white');
+       this.die2 = this.add.text(930, 125, '','Arial, 80, , , , , white');
+       this.die3 = this.add.text(930, 150, '','Arial, 80, , , , , white');
+       this.die4 = this.add.text(930, 175, '','Arial, 80, , , , , white');
+       
        this.board = 
        [
             [0,0,0,0,0,0,0,0],
@@ -59,6 +66,7 @@
        fillHand(this);
        setUp(this);
        endTurnBtn(this);
+       rollButton(this)
        movement(this);
     }
 
@@ -97,9 +105,6 @@
             var x = Math.round((gameObject.x) / 120);
             var y = Math.round((gameObject.y) / 79);
 
-            console.log(x - 2);
-            console.log(y - 1);
-            console.log(game.board[x - 2][y - 1]);
             if(game.board[x - 2][y - 1] == 0)
             {
                 game.board[x - 2][y - 1] = 1;
@@ -121,8 +126,28 @@
 
         game.input.on('dragstart', function (pointer, gameObject)
         {
-        originX = gameObject.x;
-        originY = gameObject.y;
+            originX = gameObject.x;
+            originY = gameObject.y;
+        });
+
+        game.input.on('gameobjectdown', function (pointer, gameObject)
+        {
+            if(pointer.rightButtonDown())
+            {
+                console.log(gameObject.name)
+                gameObject.health--;
+
+                if(gameObject.health == 0)
+                {
+                    gameObject.destroy();
+                    game.energy += 1;
+                    game.discard.text = game.energy;
+                        
+                    x = Math.round((originX) / 120);
+                    y = Math.round((originY) / 79);
+                    game.board[x - 2][y - 1] = 0;
+                }
+            }
         });
     }
 
@@ -146,6 +171,7 @@
             
             set.name = i;
             set.placed = true;
+            set.health = 2;
 
             set.setSize(card.width * config.cardS, card.height * config.cardS);
 
@@ -172,6 +198,7 @@
                 game.hand[x].name = game.deck[game.cardIdx];
                 game.hand[x].val = x;
                 game.hand[x].placed = false;
+                game.hand[x].health = 2;
                 game.cardIdx++;
 
                 game.hand[x].setSize(card.width * config.cardS, card.height * config.cardS);
@@ -216,6 +243,36 @@
 
             fillHand(game);
 
+        });
+    }
+
+    function rollButton(game)
+    {    
+        var sprite = game.add.image(0, 0, 'logo').setScale(.1);
+        var endBtn = game.add.container(930, 50, [ sprite ]);
+            
+        endBtn.setSize(sprite.width * .1, sprite.height * .1);
+
+        endBtn.setInteractive();
+
+        endBtn.on('pointerover', function () {
+
+            sprite.setTint(0x7878ff);
+
+        });
+
+        endBtn.on('pointerout', function () {
+
+            sprite.clearTint();
+
+        });
+
+        endBtn.on('pointerdown', function () 
+        {
+            game.die1.text = Math.floor(Math.random() * 6) + 1;
+            game.die2.text = Math.floor(Math.random() * 6) + 1;
+            game.die3.text = Math.floor(Math.random() * 6) + 1;
+            game.die4.text = Math.floor(Math.random() * 6) + 1;
         });
     }
    
