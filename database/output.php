@@ -3,7 +3,7 @@ session_start();
 include 'db.php'
 
 
-$type=filter_input(INPUT_GET, 'type');
+//$type=filter_input(INPUT_GET, 'type');
 $name=filter_input(INPUT_GET, 'name');
 $hit_dice=filter_input(INPUT_GET, 'hit_dice');
 
