@@ -10,4 +10,3 @@ open local host to run webpage
 is.bat can be ran inside root folder with CMD to install composer
 
 
-//to have code update in all clients fix the line where the client excludes itself from its own message

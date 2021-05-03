@@ -25,7 +25,7 @@
                 <div class="card-body">
                    <h3>&nbsp;</h3>
                   
-                   <p><button type="button" class="btn btn-success btn-md" id="create" onclick="">Create Game</button></p>
+                   <p><button type="button" class="btn btn-success btn-md" id="create" onclick="create();">Create Game</button></p>
                    <button type="button" class="btn btn-success btn-md" id="join">&nbsp&nbsp Join Game&nbsp</button>
                 </div>
              </div>
@@ -66,7 +66,7 @@
              <p>Copyright &copy; 2020 &middot; All Rights Reserved &middot; <a href="#" >My Website</a></p>
           </div>
        </div>
-
+       
 
       <script>
 
@@ -78,35 +78,61 @@
           }
    
           conn.onmessage = function(e) {
+            //var match = e.data.match(/^\d+$/);
+           // var_dump(match);
+           console.log(e);
+            var msg = JSON.parse(e);
             
-            var msg = JSON.parse(e.data);
-            if(msg == "one"){
-            document.getElementById("users").innerHTML += "LOLOLOL"
+            if(msg.command == "create"){
+               var li = document.createElement('option');
+              
+              var list = document.getElementById("gamelist");
+
+              li.setAttribute('value', msg.id);
+              li.setAttribute('id', msg.id);
+              li.appendChild(document.createTextNode(msg.id + "'s game"));
+              list.appendChild(li);
             }
+            else if(/^\d+$/){
+               
+              
+               const userBox = `
+               <div class="chat_ib ${msg}-userlist">
+              <h5>${msg}</h5>
+               </div>
+                `;
+              //document.getElementById("users").innerHTML =userBox;
+               document.getElementById("users").innerHTML += userBox;
+               //document.getElementById("users").innerHTML += '<br>';
+            }
+            else if(msg.command == "join"){
+
+            }
+            
+               
+               
+               //const userBox = `
+           // <div class="chat_ib ${userName}-userlist">
+             // <h5>${userName}</h5>
+         //  </div>
+        //  `;
+
+            
+           // document.getElementById("users").innerHTML += userBox;
+
+           
 
           
           };
           
           //TODO GET EVENT LISTENERS
-          $('#create').click(function(){
-              var msg = "one";
+         
+            //  var msg = "one";
 
-              conn.send(JSON.stringify(msg));
+             // conn.send(JSON.stringify(msg));
 
-          });
-
-          document.getElementById("create").addEventListener("click", function () {
-               //document.getElementById("users").innerHTML += "LOLOLOL"
-                console.log("WORKS!!!");
-               var msg = "one";
-
-              conn.send(JSON.stringify(msg));
-          });
-
-
-
-
-
+        
+         
         
 
           //document.getElementById("create").addEventListener("click", function () {
@@ -195,6 +221,59 @@
 
 
       </script>
+
+<script type="application/javascript">
+
+   
+
+   document.getElementById("join").addEventListener("click", function () {
+      //var msg = "one";
+      var sel = document.getElementById('gamelist').value;
+
+
+      conn.send(JSON.stringify({command: "join", id: sel}));
+      //conn.send(JSON.stringify(msg));
+
+      
+
+      //either manipulate html here or inside the socket onmessagereceived code
+                
+               
+   });
+
+   document.getElementById("create").addEventListener("click", function () {
+      //var msg = "one";
+      
+      //need users own id here from variable in message
+      conn.send(JSON.stringify({command: "create", id: ''}));
+     
+
+      
+
+      //either manipulate html here or inside the socket onmessagereceived code
+                
+               
+   });
+   
+
+//function subscribe(channel) {
+  //  conn.send(JSON.stringify({command: "subscribe", channel: channel}));
+//}
+
+ 
+   
+
+
+
+//setInterval(myMethod, 2000);
+
+function myMethod( )
+{
+   var msg = "update";
+
+conn.send(JSON.stringify(msg));
+}
+ </script>
     
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
     <script src="jquery-3.4.1.min.js"></script>
