@@ -34,6 +34,8 @@
 
     function create ()
     {
+        this.originX
+        this.originY
         this.ready = false;
         this.p1 = null;
         this.p2 = null;
@@ -88,6 +90,8 @@
         rollButton(game)
         movement(game);
 
+        game.ready = true;
+        boardUpdateSend(null, null, null, game, 'c')
     }
 
     function pickFaction(game)
@@ -177,15 +181,15 @@
                 game.energy += 1;
                 game.discard.text = game.energy;
                     
-                x = Math.round((originX) / 120);
-                y = Math.round((originY) / 79);
+                x = Math.round((game.originX) / 120);
+                y = Math.round((game.originY) / 79);
                 game.board[x - 2][y - 1] = null;
             }
 
             else if(!checkOverlap(gameObject, game.bk))
             {
-                gameObject.x = originX;
-                gameObject.y = originY;
+                gameObject.x = game.originX;
+                gameObject.y = game.originY;
             }
 
             else 
@@ -199,15 +203,15 @@
                     game.board[x - 2][y - 1] = gameObject;
                     gameObject.x = 120 * x - 40;
                     gameObject.y = 79 * y + 4;
-                    boardUpdateSend(x, (y - 8) * -1, gameObject, game, 'p')
+                    boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'p')
                     
-                    x = Math.round((originX) / 120);
-                    y = Math.round((originY) / 79);
+                    x = Math.round((game.originX) / 120);
+                    y = Math.round((game.originY) / 79);
 
                     if(gameObject.placed == true)
                     {
                         game.board[x - 2][y - 1] = null;
-                        boardUpdateSend(x, (y - 8) * -1, gameObject, game, 'k')
+                        boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
                     
                     }
                     
@@ -216,16 +220,16 @@
 
                 else
                 {        
-                    gameObject.x = originX;
-                    gameObject.y = originY;
+                    gameObject.x = game.originX;
+                    gameObject.y = game.originY;
                 }
             }
         });
 
         game.input.on('dragstart', function (pointer, gameObject)
         {
-            originX = gameObject.x;
-            originY = gameObject.y;
+            game.originX = gameObject.x;
+            game.originY = gameObject.y;
         });
 
         game.input.on('gameobjectdown', function (pointer, gameObject)
@@ -236,13 +240,16 @@
 
                 if(gameObject.health == 0)
                 {
+                    game.originX = gameObject.x;
+                    game.originY = gameObject.y;
                     gameObject.destroy();
                     game.energy += 1;
                     game.discard.text = game.energy;
                         
-                    x = Math.round((originX) / 120);
-                    y = Math.round((originY) / 79);
+                    x = Math.round((game.originX) / 120);
+                    y = Math.round((game.originY) / 79);
                     game.board[x - 2][y -1] = null;
+                    boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
                 }
             }
         });
@@ -381,7 +388,6 @@
 
     function boardUpdateRecieve(msg, game)
     {
-        console.log(msg)
         var x;
         var y;
 
@@ -390,7 +396,7 @@
             x = msg[1];
             y = msg[2];
 
-            var card = game.add.image(0, 0, game.p2, parseInt(msg[3]));
+            var card = game.add.image(0, 0, game.p2, msg[3]);
             card.setScale(config.cardS);
             card.angle += -90;
 
@@ -412,10 +418,49 @@
         }
 
         else if(msg[0] == 'r')
+        {    
+            for(x = 0; x < 6; x++)
+            {
+                for(y = 0; y < 8; y++)
+                {       
+                    if(game.board[x][y] != null)
+                    {                 
+                        var msg = 'p';
+
+                        msg += ((x - 6) * -1) + 1;
+                        msg += ((y  - 8) * -1);
+                        msg += game.board[x][y].name;
+                        msg += game.board[x][y].health;
+
+                        game.conn.send(JSON.stringify(msg));
+                    }
+                }
+            }
+        }
+
+        else if(msg[0] == 'c')
         {
             if(game.ready == true)
             {
+                game.conn.send(JSON.stringify('r'));
                 
+                for(x = 0; x < 6; x++)
+                {
+                    for(y = 0; y < 8; y++)
+                    {       
+                        if(game.board[x][y] != null)
+                        {                 
+                            var msg = 'p';
+
+                            msg += ((x - 6) * -1) + 1;
+                            msg += ((y  - 8) * -1);
+                            msg += game.board[x][y].name;
+                            msg += game.board[x][y].health;
+
+                            game.conn.send(JSON.stringify(msg));
+                        }
+                    }
+                }
             }
         }
     }
@@ -426,11 +471,10 @@
         {
             var msg = action;
 
-            msg += x;
+            msg += x + 3;
             msg += y + 1;
             msg += gameObject.name;
             msg += gameObject.health;
-            console.log(msg)
 
             game.conn.send(JSON.stringify(msg));
         }
@@ -438,7 +482,7 @@
         else if(action == 'k')
         {
             var msg = action;
-            msg += x;
+            msg += x + 3;
             msg += y + 1;
             game.conn.send(JSON.stringify(msg));
         }
@@ -446,7 +490,12 @@
         else if(action == 'r')
         {
             var msg = action;
-            console.log(msg)
+            game.conn.send(JSON.stringify(msg));
+        }
+
+        else if(action == 'c')
+        {
+            var msg = action;
             game.conn.send(JSON.stringify(msg));
         }
     }
