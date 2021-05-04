@@ -931,7 +931,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
         game.deckOfCards[31] = game.deckOfCards[4]
         game.deckOfCards[32] = game.deckOfCards[4]
 
-
+//comment
         }
         
               
