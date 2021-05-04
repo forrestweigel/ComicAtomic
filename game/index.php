@@ -74,7 +74,13 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
         for(x = 0; x < 33; x++)
         {
             this.deckOfCards[x] = this.add.container();
-            this.deckOfCards[x].type = "card";
+            this.deckOfCards[x].name = NULL;
+            this.deckOfCards[x].type = NULL
+            this.deckOfCards[x].hit_dice = NULL;
+            this.deckOfCards[x].health = NULL;
+            this.deckOfCards[x].cost = NULL;
+            this.deckOfCards[x].ranged = NULL;           
+           
         }
 
         buildDeck(this, "FF");
@@ -593,6 +599,9 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
     
     function buildDeck(game, facName)
     {
+        if (facName=="FF")
+        {
+
         <?php
             $sql="SELECT * FROM cards WHERE cards.name = 'Brooklyn Blur'";
             $result=$mysqli->query($sql);
@@ -600,8 +609,332 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
         ?>
 
         //database call for brooklynblur
+        game.deckOfCards[0].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[0].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[0].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[0].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[0].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[0].ranged = "<?php echo $rows['ranged']?>"
+        game.deckOfCards[9]=game.deckOfCards[0]
+        game.deckOfCards[10]=game.deckOfCards[0]
+        game.deckOfCards[11]=game.deckOfCards[0]
+        game.deckOfCards[12]=game.deckOfCards[0]
+        game.deckOfCards[13]=game.deckOfCards[0]
 
-        game.deckOfCards[0].type = "<?php echo $rows['type']?>"        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Minuteman'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for minuteman
+        game.deckOfCards[1].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[1].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[1].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[1].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[1].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[1].ranged = "<?php echo $rows['ranged']?>"
+        game.deckOfCards[2]=game.deckOfCards[1]
+        game.deckOfCards[14]=game.deckOfCards[1]
+        game.deckOfCards[15]=game.deckOfCards[1]
+        game.deckOfCards[16]=game.deckOfCards[1]
+        game.deckOfCards[17]=game.deckOfCards[1]
+
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Riveteer'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for riveteer
+        game.deckOfCards[3].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[3].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[3].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[3].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[3].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[3].ranged = "<?php echo $rows['ranged']?>"
+        game.deckOfCards[18]=game.deckOfCards[3]
+        game.deckOfCards[19]=game.deckOfCards[3]
+        game.deckOfCards[20]=game.deckOfCards[3]
+        game.deckOfCards[21]=game.deckOfCards[3]
+        game.deckOfCards[22]=game.deckOfCards[3]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Abraham'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for abraham
+        game.deckOfCards[5].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[5].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[5].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[5].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[5].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[5].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Crushmore'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for crushmore
+        game.deckOfCards[6].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[6].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[6].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[6].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[6].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[6].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Liberty Belle'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for liberty belle
+        game.deckOfCards[7].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[7].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[7].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[7].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[7].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[7].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Winged Wonder'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for winged wonder
+        game.deckOfCards[8].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[8].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[8].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[8].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[8].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[8].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Let Freedom Ring'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for let freedom ring
+        game.deckOfCards[23].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[23].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[24] = game.deckOfCards[23]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Justice For All'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for justice for all
+        game.deckOfCards[25].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[25].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[26] = game.deckOfCards[25]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Cost of Freedom'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for cost of freedom
+        game.deckOfCards[27].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[27].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[28] = game.deckOfCards[27]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Shock & Awesome'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for shock & awesome
+        game.deckOfCards[29].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[29].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[30] = game.deckOfCards[29]
+
+        //fort info
+        game.deckOfCards[4].name = "Hall of Freedom"
+        game.deckOfCards[4].type = "Fort"
+        game.deckOfCards[31] = game.deckOfCards[4]
+        game.deckOfCards[32] = game.deckOfCards[4]
+
+        }
+        else
+        {
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'El Niño'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for el niño
+        game.deckOfCards[0].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[0].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[0].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[0].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[0].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[0].ranged = "<?php echo $rows['ranged']?>"
+        game.deckOfCards[9]=game.deckOfCards[0]
+        game.deckOfCards[10]=game.deckOfCards[0]
+        game.deckOfCards[11]=game.deckOfCards[0]
+        game.deckOfCards[12]=game.deckOfCards[0]
+        game.deckOfCards[13]=game.deckOfCards[0]
+
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Piñata'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for piñata
+        game.deckOfCards[1].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[1].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[1].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[1].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[1].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[1].ranged = "<?php echo $rows['ranged']?>"
+        game.deckOfCards[2]=game.deckOfCards[1]
+        game.deckOfCards[14]=game.deckOfCards[1]
+        game.deckOfCards[15]=game.deckOfCards[1]
+        game.deckOfCards[16]=game.deckOfCards[1]
+        game.deckOfCards[17]=game.deckOfCards[1]
+
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Margarita'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for margarita
+        game.deckOfCards[3].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[3].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[3].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[3].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[3].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[3].ranged = "<?php echo $rows['ranged']?>"
+        game.deckOfCards[18]=game.deckOfCards[3]
+        game.deckOfCards[19]=game.deckOfCards[3]
+        game.deckOfCards[20]=game.deckOfCards[3]
+        game.deckOfCards[21]=game.deckOfCards[3]
+        game.deckOfCards[22]=game.deckOfCards[3]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Quetzalcoatl'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for quetzalcoatl
+        game.deckOfCards[5].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[5].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[5].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[5].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[5].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[5].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'El Muerto'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for el muerto
+        game.deckOfCards[6].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[6].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[6].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[6].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[6].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[6].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Doom Quixote'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for doom quixote
+        game.deckOfCards[7].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[7].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[7].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[7].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[7].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[7].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Matadora'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for matadora
+        game.deckOfCards[8].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[8].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[8].hit_dice = "<?php echo $rows['hit_dice']?>"
+        game.deckOfCards[8].health = "<?php echo $rows['health']?>"
+        game.deckOfCards[8].cost = "<?php echo $rows['cost']?>"
+        game.deckOfCards[8].ranged = "<?php echo $rows['ranged']?>"
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Hispanic Panic'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for hispanic panic
+        game.deckOfCards[23].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[23].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[24] = game.deckOfCards[23]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Cinco De Mayo'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for cinco de mayo
+        game.deckOfCards[25].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[25].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[26] = game.deckOfCards[25]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Just Juan More'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for just juan more
+        game.deckOfCards[27].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[27].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[28] = game.deckOfCards[27]
+        
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Mexican Mayhem'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
+
+        //database call for shock & awesome
+        game.deckOfCards[29].name = "<?php echo $rows['name']?>"
+        game.deckOfCards[29].type = "<?php echo $rows['type']?>"
+        game.deckOfCards[30] = game.deckOfCards[29]
+
+        //fort info
+        game.deckOfCards[4].name = "Fiesta Fortress"
+        game.deckOfCards[4].type = "Fort"
+        game.deckOfCards[31] = game.deckOfCards[4]
+        game.deckOfCards[32] = game.deckOfCards[4]
+
+
+        }
+        
+              
     }
     </script>
 
