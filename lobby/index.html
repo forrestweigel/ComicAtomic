@@ -11,15 +11,11 @@
 
 </head>
   <body>
-   
-
-    <div class="jumbotron">  </div>
-    
-       <br>
-       <hr>
-       <br>
-       
-       <div class ="row">
+   <div class="jumbotron">  </div>    
+      <br>
+      <hr>
+      <br> 
+      <div class ="row">
           <div class="col-md-6 text-center col-xl-4">
              <div class="card">
                 <div class="card-body">
@@ -57,232 +53,86 @@
 		   
 		   
       </div>
-      
-       <br>
-       <hr>
-       <div class="row">
+      <br>
+      <hr>
+      <div class="row">
           <div class="text-center col-lg-6 offset-lg-3">
              <h4>Footer </h4>
              <p>Copyright &copy; 2020 &middot; All Rights Reserved &middot; <a href="#" >My Website</a></p>
           </div>
-       </div>
-       
+      </div>
+      <script> 
 
-      <script>
-         
-         
-          //socket server
-          var conn = new WebSocket('ws://localhost:1337');
-          conn.onopen = function(e) {
+         //socket server
+         var conn = new WebSocket('ws://localhost:1337');
+
+         conn.onopen = function(e) 
+         {
             console.log("connection established!");
-          }
+         }
    
-          conn.onmessage = function(e) {
-            //var match = e.data.match(/^\d+$/);
-           // var_dump(match);
-           console.log(e);
-            var msg = JSON.parse(e.data);
+         conn.onmessage = function(e) 
+         {
+            var msg = JSON.parse(e.data);           
             
-            
-            if(msg.command == "create"){
-               var li = document.createElement('option');
-              
-              var list = document.getElementById("gamelist");
+            if(msg.command == "create")
+            {
+               var li = document.createElement('option');            
+               var list = document.getElementById("gamelist");
 
-              li.setAttribute('value', msg.id);
-              li.setAttribute('id', msg.id);
-              li.appendChild(document.createTextNode(msg.id + "'s game"));
-              list.appendChild(li);
+               li.setAttribute('value', msg.id);
+               li.setAttribute('id', msg.id);
+               li.appendChild(document.createTextNode(msg.id + "'s game"));
+               list.appendChild(li);
             }
-            else if(msg.command == "join"){
-               //data = user joining game data2 = game creator
-             //document.getElementById("users").innerHTML += msg.id;
-              //document.getElementById("users").innerHTML += msg.id;
-              console.log(msg.id);
-              console.log(msg.id2);
-              var item = document.getElementById(msg.id);
 
-              var remove = document.getElementById("gamelist");
-              remove.remove(remove.item);
-              //remove.removeChild(item);
+            else if(msg.command == "join")
+            {
+               console.log(msg.id);
+               console.log(msg.id2);
+               var item = document.getElementById(msg.id);
 
-              conn.send(JSON.stringify({command: "start", id1:msg.id1, id2:msg.id2}));
+               var remove = document.getElementById("gamelist");
+               remove.remove(remove.item);
+
+               conn.send(JSON.stringify({command: "start", id1:msg.id1, id2:msg.id2}));
 
             }
-            else if(msg.command == 'start'){
 
-               header("Location: 'Location:blank.html"); /* Redirect browser */
-               exit();
-               //run php header to game page
-               //POST or session POST or something to send connection data to game server
-
-
+            else if(msg.command == 'start')
+            {
+               window.location.href = "blank.html"; 
             }
-            
-               
-               
-               //const userBox = `
-           // <div class="chat_ib ${userName}-userlist">
-             // <h5>${userName}</h5>
-         //  </div>
-        //  `;
-
-            
-           // document.getElementById("users").innerHTML += userBox;
-
-           
-
-          
-          };
-          
-          //TODO GET EVENT LISTENERS
-         
-            //  var msg = "one";
-
-             // conn.send(JSON.stringify(msg));
-
-        
-         
-        
-
-          //document.getElementById("create").addEventListener("click", function () {
-               //document.getElementById("users").innerHTML += "LOLOLOL"
-                
-               
-         // });
-
-           //document.getElementById("join").addEventListener("click", function () {
-               
-
-           //});
-
-          
-
-
-
-        //const newUserConnected = (user) => {
-         //   userName = user || `User${Math.floor(Math.random() * 1000000)}`;
-           // socket.emit("new user", userName);
-           // addToUsersBox(userName);
-     //   };
-
-        //const sendMessage = () => {
-
-              //socket.emit('m', "worked")
-    //    }
-
-       // const addToUsersBox = (userName) => {
-          //  if (!!document.querySelector(`.${userName}-userlist`)) {
-             //   return;
-           // }
-
-            //const userBox = `
-           // <div class="chat_ib ${userName}-userlist">
-             // <h5>${userName}</h5>
-         //  </div>
-        //  `;
-
-            
-           // document.getElementById("users").innerHTML += userBox;
-      //  };
-
-            // new user is created so we generate nickname and emit event
-            //newUserConnected();
-
-            //socket.on("new user", function (data) {
-                //data.map((user) => addToUsersBox(user));
-           // });
-
-            //socket.on("user disconnected", function (userName) {
-               // document.querySelector(`.${userName}-userlist`).remove();
-           // });
-
-        
-
-          //socket.on("create", function (data) {
-
-            //  var li = document.createElement('option');
-              
-              //var list = document.getElementById("gamelist");
-
-             // li.setAttribute('value', data);
-            //  li.setAttribute('id', data);
-             // li.appendChild(document.createTextNode(data + "'s game"));
-             // list.appendChild(li);
-
-              
-             
-         // });
-
-         // socket.on("join", function(data,data2) {
-
-              //data = user joining game data2 = game creator
-             // document.getElementById("users").innerHTML += data;
-              //document.getElementById("users").innerHTML += data2;
-
-             // var item = document.getElementById(data2);
-              //var remove = document.getElementById("gamelist");
-              //remove.removeChild(item);
-
-              
-             
-          //});
-
-
+         };
 
       </script>
 
-<script type="application/javascript">
+      <script type="application/javascript">
 
-   
-
-   document.getElementById("join").addEventListener("click", function () {
+   document.getElementById("join").addEventListener("click", function () 
+   {
       //var msg = "one";
       var sel = document.getElementById('gamelist').value;
-
-
       conn.send(JSON.stringify({command: "join", id: sel}));
       //conn.send(JSON.stringify(msg));
-
-      
-
-      //either manipulate html here or inside the socket onmessagereceived code
-                
-               
+      //either manipulate html here or inside the socket onmessagereceived code                  
    });
 
-   document.getElementById("create").addEventListener("click", function () {
-      //var msg = "one";
-      
+   document.getElementById("create").addEventListener("click", function () 
+   {
+      //var msg = "one";  
       //need users own id here from variable in message
       conn.send(JSON.stringify({command: "create", id: ''}));
-     
-
-      
-
-      //either manipulate html here or inside the socket onmessagereceived code
-                
-               
+      //either manipulate html here or inside the socket onmessagereceived co             
    });
-   
-
-//function subscribe(channel) {
-  //  conn.send(JSON.stringify({command: "subscribe", channel: channel}));
-//}
-
- 
-   
-
-
-
-//setInterval(myMethod, 2000);
 
 function myMethod( )
 {
    var msg = "update";
 
-conn.send(JSON.stringify(msg));
+   conn.send(JSON.stringify(msg));
 }
+
  </script>
     
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
