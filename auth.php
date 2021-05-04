@@ -43,7 +43,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 	
 	else 
 	{
-		header('Location: index.php?msg=%20Password%20is%20Incorrect');
+		Header('Location: index.php?msg=%20Password%20is%20Incorrect');
 		exit();
 	}
 	
