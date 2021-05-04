@@ -96,7 +96,7 @@
 
     function pickFaction(game)
     {        
-        game.conn = new WebSocket('ws://localhost:1337');
+        game.conn = new WebSocket('ws://172.16.216.210:1337');
 
         game.conn.onopen = function(e) 
         {
@@ -300,6 +300,7 @@
                 game.hand[x] = game.add.container(70, 290 + (90 * x), [ card ]);
                 
                 game.hand[x].name = game.deck[game.cardIdx];
+                console.log(game.hand[x].name)
                 game.hand[x].val = x;
                 game.hand[x].placed = false;
                 game.hand[x].health = 2;
@@ -396,7 +397,7 @@
             x = msg[1];
             y = msg[2];
 
-            var card = game.add.image(0, 0, game.p2, msg[3]);
+            var card = game.add.image(0, 0, game.p2, (msg.charCodeAt(3) - 97));
             card.setScale(config.cardS);
             card.angle += -90;
 
@@ -404,6 +405,7 @@
 
             set.setSize(card.width * config.cardS, card.height * config.cardS);
             set.health = msg[4];
+            set.setInteractive();
 
             game.board[x - 2][y - 1] = set;
         }
@@ -412,8 +414,6 @@
         {
             x = msg[1];
             y = msg[2];
-
-            console.log(x,y)
             game.board[x - 2][y - 1].destroy();
         }
 
@@ -429,7 +429,8 @@
 
                         msg += ((x - 6) * -1) + 1;
                         msg += ((y  - 8) * -1);
-                        msg += game.board[x][y].name;
+                        msg += String.fromCharCode(game.board[x][y].name + 97)
+                        console.log(game.board[x][y].name)
                         msg += game.board[x][y].health;
 
                         game.conn.send(JSON.stringify(msg));
@@ -454,7 +455,8 @@
 
                             msg += ((x - 6) * -1) + 1;
                             msg += ((y  - 8) * -1);
-                            msg += game.board[x][y].name;
+                            msg += String.fromCharCode(game.board[x][y].name + 97)
+                            console.log(game.board[x][y].name)
                             msg += game.board[x][y].health;
 
                             game.conn.send(JSON.stringify(msg));
@@ -473,7 +475,8 @@
 
             msg += x + 3;
             msg += y + 1;
-            msg += gameObject.name;
+            msg += String.fromCharCode(gameObject.name + 97);
+            console.log(gameObject.name)
             msg += gameObject.health;
 
             game.conn.send(JSON.stringify(msg));
