@@ -69,7 +69,7 @@
        
 
       <script>
-
+         
          
           //socket server
           var conn = new WebSocket('ws://localhost:1337');
@@ -81,7 +81,8 @@
             //var match = e.data.match(/^\d+$/);
            // var_dump(match);
            console.log(e);
-            var msg = JSON.parse(e);
+            var msg = JSON.parse(e.data);
+            
             
             if(msg.command == "create"){
                var li = document.createElement('option');
@@ -93,19 +94,28 @@
               li.appendChild(document.createTextNode(msg.id + "'s game"));
               list.appendChild(li);
             }
-            else if(/^\d+$/){
-               
-              
-               const userBox = `
-               <div class="chat_ib ${msg}-userlist">
-              <h5>${msg}</h5>
-               </div>
-                `;
-              //document.getElementById("users").innerHTML =userBox;
-               document.getElementById("users").innerHTML += userBox;
-               //document.getElementById("users").innerHTML += '<br>';
-            }
             else if(msg.command == "join"){
+               //data = user joining game data2 = game creator
+             //document.getElementById("users").innerHTML += msg.id;
+              //document.getElementById("users").innerHTML += msg.id;
+              console.log(msg.id);
+              console.log(msg.id2);
+              var item = document.getElementById(msg.id);
+
+              var remove = document.getElementById("gamelist");
+              remove.remove(remove.item);
+              //remove.removeChild(item);
+
+              conn.send(JSON.stringify({command: "start", id1:msg.id1, id2:msg.id2}));
+
+            }
+            else if(msg.command == 'start'){
+
+               header("Location: 'Location:blank.html"); /* Redirect browser */
+               exit();
+               //run php header to game page
+               //POST or session POST or something to send connection data to game server
+
 
             }
             
