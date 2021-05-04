@@ -7,6 +7,8 @@
 
     <script>
 
+    //click to enlarge card
+
     var config = {
         type: Phaser.AUTO,
         width: 1000,
@@ -30,6 +32,8 @@
         this.load.image('FFLogo', '/ComicAtomic/img/FFLogo.png');
         this.load.image('MMLogo', '/ComicAtomic/img/MMLogo.png');
         this.load.image('logo', '/ComicAtomic/img/logo.png'); 
+        this.load.image('dice', '/ComicAtomic/img/rollDice.png'); 
+        this.load.image('end', '/ComicAtomic/img/endTurn.png'); 
     }
 
     function create ()
@@ -98,11 +102,13 @@
     {        
         game.conn = new WebSocket('ws://172.16.216.210:1337');
 
+        //establish connection
         game.conn.onopen = function(e) 
         {
             console.log("connection established!");
         }
 
+        //recieve message
         game.conn.onmessage = function(e) 
         {       
             var msg = JSON.parse(e.data);
@@ -110,11 +116,10 @@
             boardUpdateRecieve(msg, game);
         };
 
+        //set up FF card button
         var facImg1 = game.add.image(0,0, "FFLogo").setScale(.5);
         var facBtn1 = game.add.container(300,350, [ facImg1 ]);
-
         facBtn1.setSize(facImg1.width * .5, facImg1.height * .5);
-
         facBtn1.setInteractive();
         
         facBtn1.on('pointerover', function () 
@@ -137,6 +142,7 @@
         });
 
 
+        //set up MM card button
         var facImg2 = game.add.image(0,0, "MMLogo").setScale(.5);
         var facBtn2 = game.add.container(700,350, [ facImg2 ]);
 
@@ -166,14 +172,17 @@
 
     function movement(game)
     {
-        game.input.on('drag', function (pointer, gameObject, dragX, dragY) {
-
-        gameObject.x = dragX;
-        gameObject.y = dragY;
+        //moving the card
+        game.input.on('drag', function (pointer, gameObject, dragX, dragY) 
+        {
+            gameObject.x = dragX;
+            gameObject.y = dragY;
         });
 
+        //movement ends
         game.input.on('dragend', function (pointer, gameObject)
         {
+            //check for energy overlap
             if(checkOverlap(gameObject, game.discard) && gameObject.placed == false)
             {
                 gameObject.destroy();
@@ -186,19 +195,22 @@
                 game.board[x - 2][y - 1] = null;
             }
 
+            //if the card isnt on the board or energy
             else if(!checkOverlap(gameObject, game.bk))
             {
                 gameObject.x = game.originX;
                 gameObject.y = game.originY;
             }
 
+            //getting placed on the board
             else 
             {
                 game.hand[gameObject.val] = null;
                 var x = Math.round((gameObject.x) / 120);
                 var y = Math.round((gameObject.y) / 79);
 
-                if(game.board[x - 2][y - 1] == null)
+                //spot was empty
+                if(game.board[x - 2][y - 1] == null && (gameObject.placed == true || (gameObject.placed == false && gameObject.cost <= game.energy)))
                 {
                     game.board[x - 2][y - 1] = gameObject;
                     gameObject.x = 120 * x - 40;
@@ -215,9 +227,15 @@
                     
                     }
                     
-                    gameObject.placed = true;
-                }
+                    else
+                    {
+                        gameObject.placed = true;
+                        game.energy -= gameObject.cost;
+                        game.discard.text = game.energy;                
+                    }
+                }        
 
+                //spot was filled
                 else
                 {        
                     gameObject.x = game.originX;
@@ -226,17 +244,30 @@
             }
         });
 
+        //set origin of card
         game.input.on('dragstart', function (pointer, gameObject)
         {
             game.originX = gameObject.x;
             game.originY = gameObject.y;
         });
 
+        //check if clicked on
         game.input.on('gameobjectdown', function (pointer, gameObject)
         {
             if(pointer.rightButtonDown())
             {
+                x = Math.round((gameObject.x) / 120);
+                y = Math.round((gameObject.y) / 79);
                 gameObject.health--;
+                gameObject.first.setTint(0xff4a3d)
+                
+                if(gameObject.last.text == '')
+                {
+                    gameObject.last.text = '0';
+                }
+                gameObject.last.text = parseInt(gameObject.last.text) + 1;
+
+                boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'd')
 
                 if(gameObject.health == 0)
                 {
@@ -245,9 +276,6 @@
                     gameObject.destroy();
                     game.energy += 1;
                     game.discard.text = game.energy;
-                        
-                    x = Math.round((game.originX) / 120);
-                    y = Math.round((game.originY) / 79);
                     game.board[x - 2][y -1] = null;
                     boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
                 }
@@ -266,15 +294,17 @@
             x = Math.floor(Math.random() * 5) + 2;
             y = Math.floor(Math.random() * 4) + 5;
 
+            var text = game.add.text(0, 0, '','Arial, 80, , , , , black');
             var card = game.add.image(0, 0, game.p1, i);
             card.setScale(config.cardS);
             card.angle += -90;
 
-            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card ]);
+            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card,text ]);
             
             set.name = i;
             set.placed = true;
             set.health = 2;
+            set.cost = 2;
 
             set.setSize(card.width * config.cardS, card.height * config.cardS);
 
@@ -287,31 +317,35 @@
 
     function fillHand(game)
     {
-        for(x = 0; x < 5; x++)
+        //if(game.cardIdx < 33)
         {
-            if(game.hand[x] == null)
+            for(x = 0; x < 5; x++)
             {
-                var card = game.add.image(0, 0, game.p1, game.deck[game.cardIdx]);
-                var originX = 0;
-                var originY = 0;
-                card.setScale(config.cardS);
-                card.angle += -90;
+                if(game.hand[x] == null)
+                {
+                    var text = game.add.text(0, 0, '','', '80', '', '', '', '', 'black');
+                    var card = game.add.image(0, 0, game.p1, game.deck[game.cardIdx]);
+                    var originX = 0;
+                    var originY = 0;
+                    card.setScale(config.cardS);
+                    card.angle += -90;
 
-                game.hand[x] = game.add.container(70, 290 + (90 * x), [ card ]);
-                
-                game.hand[x].name = game.deck[game.cardIdx];
-                console.log(game.hand[x].name)
-                game.hand[x].val = x;
-                game.hand[x].placed = false;
-                game.hand[x].health = 2;
-                game.hand[x].dice = 3;
-                game.cardIdx++;
+                    game.hand[x] = game.add.container(70, 290 + (90 * x), [ card, text ]);
+                    
+                    game.hand[x].name = game.deck[game.cardIdx];
+                    game.hand[x].val = x;
+                    game.hand[x].placed = false;
+                    game.hand[x].health = 2;
+                    game.hand[x].cost = 2;
 
-                game.hand[x].setSize(card.width * config.cardS, card.height * config.cardS);
+                    game.cardIdx++;
 
-                game.hand[x].setInteractive();
+                    game.hand[x].setSize(card.width * config.cardS, card.height * config.cardS);
 
-                game.input.setDraggable(game.hand[x]);
+                    game.hand[x].setInteractive();
+
+                    game.input.setDraggable(game.hand[x]);
+                }
             }
         }   
     }
@@ -326,7 +360,7 @@
 
     function endTurnBtn(game)
     {    
-        var sprite = game.add.image(0, 0, 'logo').setScale(.1);
+        var sprite = game.add.image(0, 0, 'end').setScale(.1);
         var endBtn = game.add.container(930, 613, [ sprite ]);
             
         endBtn.setSize(sprite.width * .1, sprite.height * .1);
@@ -354,7 +388,7 @@
 
     function rollButton(game)
     {    
-        var sprite = game.add.image(0, 0, 'logo').setScale(.1);
+        var sprite = game.add.image(0, 0, 'dice').setScale(.1);
         var endBtn = game.add.container(930, 50, [ sprite ]);
             
         endBtn.setSize(sprite.width * .1, sprite.height * .1);
@@ -397,16 +431,18 @@
             x = msg[1];
             y = msg[2];
 
+            var text = game.add.text(0, 0, '','', '80', '', '', '', '', 'black');
             var card = game.add.image(0, 0, game.p2, (msg.charCodeAt(3) - 97));
             card.setScale(config.cardS);
             card.angle += -90;
 
-            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card ]);
+            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card,text ]);
 
             set.setSize(card.width * config.cardS, card.height * config.cardS);
             set.health = msg[4];
             set.setInteractive();
 
+            console.log(x,y)
             game.board[x - 2][y - 1] = set;
         }
 
@@ -465,6 +501,21 @@
                 }
             }
         }
+    
+        else if(msg[0] == 'd')
+        {
+            x = msg[1];
+            y = msg[2];
+                
+            if(game.board[x - 2][y - 1].last.text == '')
+            {
+                game.board[x - 2][y - 1].last.text = '0';
+            }
+
+            game.board[x - 2][y - 1].last.text = parseInt(game.board[x - 2][y - 1].last.text) + 1;
+            console.log(x,y)
+            game.board[x - 2][y - 1].first.setTint(0xff4a3d)
+        }
     }
 
     function boardUpdateSend(x, y, gameObject, game, action)
@@ -499,6 +550,14 @@
         else if(action == 'c')
         {
             var msg = action;
+            game.conn.send(JSON.stringify(msg));
+        }
+    
+        else if(action == 'd')
+        {
+            var msg = action;
+            msg += x + 3;
+            msg += y + 1;
             game.conn.send(JSON.stringify(msg));
         }
     }
