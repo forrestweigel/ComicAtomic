@@ -1,6 +1,19 @@
 <?php
 session_start();
 include 'db.php';
+
+class Card
+{
+	public $name;
+	public $type;
+	public $number;
+	public $count;
+	public $hit_dice;
+	public $health;
+	public $cost;
+	public $ranged;
+}
+
 $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 	
 	if (mysqli_connect_errno()) 
@@ -8,8 +21,6 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 		echo "Connect failed: " . mysqli_connect_error();
 		exit();
 	}
-
-    else echo "connected to db";
 ?>
 
 <!DOCTYPE html>
@@ -58,11 +69,19 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
         this.p1 = null;
         this.p2 = null;
         this.input.mouse.disableContextMenu();
+        this.deckOfCards = Array();
+
+        for(x = 0; x < 33; x++)
+        {
+            this.deckOfCards[x] = this.add.container();
+            this.deckOfCards[x].type = "card";
+        }
+
+        buildDeck(this, "FF");
 
         pickFaction(this);
 
         this.deck = Phaser.Utils.Array.NumberArray(6,33);
-        this.deckOfCards = Array();
         this.hand = Array();
         this.energy = 0;
 
@@ -93,6 +112,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
         {
            this.hand[x] = null;
         }
+    
 
         Phaser.Utils.Array.Shuffle(this.deck);
         this.cardIdx = 0;
@@ -331,7 +351,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
     function fillHand(game)
     {
-        //if(game.cardIdx < 33)
+        if(game.cardIdx < 33)
         {
             for(x = 0; x < 5; x++)
             {
@@ -428,11 +448,6 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             game.die3.text = Math.floor(Math.random() * 6) + 1;
             game.die4.text = Math.floor(Math.random() * 6) + 1;
         });
-    }
-   
-    function getCardInfo(game)
-    {
-
     }
 
     function boardUpdateRecieve(msg, game)
@@ -578,27 +593,15 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
     
     function buildDeck(game, facName)
     {
-        var card;
+        <?php
+            $sql="SELECT * FROM cards WHERE cards.name = 'Brooklyn Blur'";
+            $result=$mysqli->query($sql);
+			$rows=$result->fetch_assoc();
+        ?>
 
         //database call for brooklynblur
 
-        card.dice = //database dice
-        card.hp = //database hp
-        card.type = //database type
-        game.deckOfCards[0] = card
-        game.deckOfCards[11] = card
-        game.deckOfCards[12] = card
-
-        
-
-        //database call for minman
-
-        card.dice = //database dice
-        card.hp = //database hp
-        card.type = //database type
-        game.deckOfCards[1] = card
-        game.deckOfCards[2] = card
-        game.deckOfCards[15] = card
+        game.deckOfCards[0].type = "<?php echo $rows['type']?>"        
     }
     </script>
 
