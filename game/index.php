@@ -1066,11 +1066,6 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             game.deckOfCards[32] = game.deckOfCards[4]
         }              
     }
-
-    function popUp()
-    {
-
-    }
     </script>
 
 </body>
