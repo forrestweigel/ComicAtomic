@@ -63,38 +63,37 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
     function create ()
     {
+        this.info = null
+        this.prev = null
         this.originX
         this.originY
         this.ready = false;
         this.p1 = null;
         this.p2 = null;
+        this.facBtn1
+        this.facBtn2
         this.input.mouse.disableContextMenu();
         this.deckOfCards = Array();
 
-        for(x = 0; x < 33; x++)
+        for(x = 0; x < 32; x++)
         {
             this.deckOfCards[x] = this.add.container();
-            this.deckOfCards[x].name = NULL;
-            this.deckOfCards[x].type = NULL
-            this.deckOfCards[x].hit_dice = NULL;
-            this.deckOfCards[x].health = NULL;
-            this.deckOfCards[x].cost = NULL;
-            this.deckOfCards[x].ranged = NULL;           
+            this.deckOfCards[x].name = null;
+            this.deckOfCards[x].type = null
+            this.deckOfCards[x].hit_dice = null;
+            this.deckOfCards[x].health = null;
+            this.deckOfCards[x].cost = null;
+            this.deckOfCards[x].ranged = null;           
            
         }
 
-        buildDeck(this, "FF");
-
         pickFaction(this);
 
-        this.deck = Phaser.Utils.Array.NumberArray(6,33);
+        this.deck = Phaser.Utils.Array.NumberArray(6,32);
         this.hand = Array();
         this.energy = 0;
 
-        this.die1 = this.add.text(930, 100, '','Arial, 80, , , , , white');
-        this.die2 = this.add.text(930, 125, '','Arial, 80, , , , , white');
-        this.die3 = this.add.text(930, 150, '','Arial, 80, , , , , white');
-        this.die4 = this.add.text(930, 175, '','Arial, 80, , , , , white');
+        this.die1 = this.add.text(885, 100, '','Arial, 80, , , , , white');
        
         this.board = 
         [
@@ -140,7 +139,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
     function pickFaction(game)
     {        
-        game.conn = new WebSocket('ws://172.16.216.210:1337');
+        game.conn = new WebSocket('ws://192.168.0.182:1337');
 
         //establish connection
         game.conn.onopen = function(e) 
@@ -158,54 +157,58 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
         //set up FF card button
         var facImg1 = game.add.image(0,0, "FFLogo").setScale(.5);
-        var facBtn1 = game.add.container(300,350, [ facImg1 ]);
-        facBtn1.setSize(facImg1.width * .5, facImg1.height * .5);
-        facBtn1.setInteractive();
+        game.facBtn1 = game.add.container(300,350, [ facImg1 ]);
+        game.facBtn1.setSize(facImg1.width * .5, facImg1.height * .5);
+        game.facBtn1.setInteractive();
         
-        facBtn1.on('pointerover', function () 
+        game.facBtn1.on('pointerover', function () 
         {
             facImg1.setTint(0x7878ff);
         });
 
-        facBtn1.on('pointerout', function () 
+        game.facBtn1.on('pointerout', function () 
         {
             facImg1.clearTint();
         });
 
-        facBtn1.on("pointerdown", function()
+        game.facBtn1.on("pointerdown", function()
         {
             game.p1 = "FFDeck";
             game.p2 = "MMDeck";
-            facBtn1.destroy();
-            facBtn2.destroy();
+            game.facBtn1.destroy();
+            game.facBtn2.destroy();
+            boardUpdateSend(null,null,null,game,'f')
+            buildDeck(game, "FF");
             runGame(game)
         });
 
 
         //set up MM card button
         var facImg2 = game.add.image(0,0, "MMLogo").setScale(.5);
-        var facBtn2 = game.add.container(700,350, [ facImg2 ]);
+        game.facBtn2 = game.add.container(700,350, [ facImg2 ]);
 
-        facBtn2.setSize(facImg2.width * .5, facImg2.height * .5);
+        game.facBtn2.setSize(facImg2.width * .5, facImg2.height * .5);
 
-        facBtn2.setInteractive();
+        game.facBtn2.setInteractive();
         
-        facBtn2.on('pointerover', function () 
+        game.facBtn2.on('pointerover', function () 
         {
             facImg2.setTint(0x7878ff);
         });
 
-        facBtn2.on('pointerout', function () 
+        game.facBtn2.on('pointerout', function () 
         {
             facImg2.clearTint();
         });
 
-        facBtn2.on("pointerdown", function()
+        game.facBtn2.on("pointerdown", function()
         {
             game.p2 = "FFDeck";
             game.p1 = "MMDeck";
-            facBtn1.destroy();
-            facBtn2.destroy();
+            game.facBtn1.destroy();
+            game.facBtn2.destroy();
+            boardUpdateSend(null,null,null,game,'f')
+            buildDeck(game, "MM");
             runGame(game)
         });
     }
@@ -246,40 +249,50 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             else 
             {
                 game.hand[gameObject.val] = null;
-                var x = Math.round((gameObject.x) / 120);
-                var y = Math.round((gameObject.y) / 79);
 
-                //spot was empty
-                if(game.board[x - 2][y - 1] == null && (gameObject.placed == true || (gameObject.placed == false && gameObject.cost <= game.energy)))
+                console.log(gameObject.type)
+                if(gameObject.type == "Event")
                 {
-                    game.board[x - 2][y - 1] = gameObject;
-                    gameObject.x = 120 * x - 40;
-                    gameObject.y = 79 * y + 4;
-                    boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'p')
-                    
-                    x = Math.round((game.originX) / 120);
-                    y = Math.round((game.originY) / 79);
+                    gameObject.destroy();
+                }
 
-                    if(gameObject.placed == true)
-                    {
-                        game.board[x - 2][y - 1] = null;
-                        boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
-                    
-                    }
-                    
-                    else
-                    {
-                        gameObject.placed = true;
-                        game.energy -= gameObject.cost;
-                        game.discard.text = game.energy;                
-                    }
-                }        
-
-                //spot was filled
                 else
-                {        
-                    gameObject.x = game.originX;
-                    gameObject.y = game.originY;
+                {
+                    var x = Math.round((gameObject.x) / 120);
+                    var y = Math.round((gameObject.y) / 79);
+
+                    //spot was empty
+                    if(game.board[x - 2][y - 1] == null && (gameObject.placed == true || (gameObject.placed == false && gameObject.cost <= game.energy)))
+                    {
+                        game.board[x - 2][y - 1] = gameObject;
+                        gameObject.x = 120 * x - 40;
+                        gameObject.y = 79 * y + 4;
+                        boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'p')
+                        
+                        x = Math.round((game.originX) / 120);
+                        y = Math.round((game.originY) / 79);
+
+                        if(gameObject.placed == true)
+                        {
+                            game.board[x - 2][y - 1] = null;
+                            boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
+                        
+                        }
+                        
+                        else
+                        {
+                            gameObject.placed = true;
+                            game.energy -= gameObject.cost;
+                            game.discard.text = game.energy;                
+                        }
+                    }        
+
+                    //spot was filled
+                    else
+                    {        
+                        gameObject.x = game.originX;
+                        gameObject.y = game.originY;
+                    }
                 }
             }
         });
@@ -292,25 +305,33 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
         });
 
         //check if clicked on
+        let lastTime = 0;
         game.input.on('gameobjectdown', function (pointer, gameObject)
         {
-            if(pointer.rightButtonDown())
+            let clickDelay = game.time.now - lastTime;
+            lastTime = game.time.now
+
+            if(pointer.rightButtonDown() && gameObject.placed == true)
             {
                 x = Math.round((gameObject.x) / 120);
                 y = Math.round((gameObject.y) / 79);
                 gameObject.health--;
                 gameObject.first.setTint(0xff4a3d)
                 
-                if(gameObject.last.text == '')
+                console.log(gameObject.last.text)
+                if(gameObject.last.text == ' ')
                 {
                     gameObject.last.text = '0';
                 }
                 gameObject.last.text = parseInt(gameObject.last.text) + 1;
+                console.log(gameObject.last.text)
 
                 boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'd')
 
+                console.log(gameObject.health)
                 if(gameObject.health == 0)
                 {
+                    if(game.prev == gameObject){game.prev = null}
                     game.originX = gameObject.x;
                     game.originY = gameObject.y;
                     gameObject.destroy();
@@ -320,7 +341,49 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
                     boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
                 }
             }
+
+            else if(clickDelay < 350)
+            {
+                if(game.info == null)
+                {
+                    var card = game.add.image(0, 0, gameObject.fact, gameObject.name);
+                    game.info = game.add.container(500, 350, [ card ]);
+                    card.angle -= 90;
+                    game.info.setSize(card.width * .5, card.height * .5);
+                    game.info.setInteractive();
+                }
+            }
+
+            else if(clickDelay > 350 && gameObject.placed == true)
+            {
+                if(game.prev != null)
+                {
+                    if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
+                    else{game.prev.first.setTint(0xff4a3d)}
+                }
+
+                gameObject.first.setTint(0x7878ff)
+                game.prev = gameObject
+            }
         });
+
+        game.input.keyboard.on('keydown_SPACE', function(event)
+        {
+            if(game.info != null)
+            {
+                game.info.destroy();
+                if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
+                else{game.prev.first.setTint(0xff4a3d)}
+                game.info = null;
+            }   
+
+            else if(game.prev != null)
+            {
+                if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
+                else{game.prev.first.setTint(0xff4a3d)}
+                prev = null;
+            }
+        })
     }
 
     function setUp(game)
@@ -334,17 +397,25 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             x = Math.floor(Math.random() * 5) + 2;
             y = Math.floor(Math.random() * 4) + 5;
 
-            var text = game.add.text(0, 0, '','Arial, 80, , , , , black');
+            while(game.board[x - 2][y - 1] != null)
+            {
+                x = Math.floor(Math.random() * 5) + 2;
+                y = Math.floor(Math.random() * 4) + 5;
+            }
+
+            var text = game.add.text(0, 0, ' ','Arial, 80, , , , , black');
             var card = game.add.image(0, 0, game.p1, i);
             card.setScale(config.cardS);
             card.angle += -90;
 
             var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card,text ]);
             
+            set.fact = game.p1;
             set.name = i;
             set.placed = true;
-            set.health = 2;
-            set.cost = 2;
+            set.health = game.deckOfCards[i].health;
+            set.cost = game.deckOfCards[i].cost;
+            set.dice = game.deckOfCards[i].hit_dice;
 
             set.setSize(card.width * config.cardS, card.height * config.cardS);
 
@@ -363,7 +434,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             {
                 if(game.hand[x] == null)
                 {
-                    var text = game.add.text(0, 0, '','', '80', '', '', '', '', 'black');
+                    var text = game.add.text(0, 0, ' ','', '80', '', '', '', '', 'black');
                     var card = game.add.image(0, 0, game.p1, game.deck[game.cardIdx]);
                     var originX = 0;
                     var originY = 0;
@@ -372,11 +443,14 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
                     game.hand[x] = game.add.container(70, 290 + (90 * x), [ card, text ]);
                     
+                    game.hand[x].type = game.deckOfCards[game.deck[game.cardIdx]].type
+                    game.hand[x].fact = game.p1
                     game.hand[x].name = game.deck[game.cardIdx];
                     game.hand[x].val = x;
                     game.hand[x].placed = false;
-                    game.hand[x].health = 2;
-                    game.hand[x].cost = 2;
+                    game.hand[x].health = game.deckOfCards[game.deck[game.cardIdx]].health;
+                    game.hand[x].cost = game.deckOfCards[game.deck[game.cardIdx]].cost;
+                    game.hand[x].dice = game.deckOfCards[game.deck[game.cardIdx]].hit_dice;
 
                     game.cardIdx++;
 
@@ -449,10 +523,18 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
         endBtn.on('pointerdown', function () 
         {
-            game.die1.text = Math.floor(Math.random() * 6) + 1;
-            game.die2.text = Math.floor(Math.random() * 6) + 1;
-            game.die3.text = Math.floor(Math.random() * 6) + 1;
-            game.die4.text = Math.floor(Math.random() * 6) + 1;
+            if(game.prev != null)
+                {
+                var dmg = 0;
+                for(x = 0; x < game.prev.dice; x++)
+                {
+                    if(Math.floor(Math.random() * 6) + 1 > 2)
+                    {
+                        dmg += 1;
+                    }
+                }
+                game.die1.text = dmg + " Damage!!";
+            }
         });
     }
 
@@ -466,18 +548,27 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             x = msg[1];
             y = msg[2];
 
-            var text = game.add.text(0, 0, '','', '80', '', '', '', '', 'black');
+            var words = game.add.text(0, 0, '',' ', '80', '', '', '', '', 'black');
             var card = game.add.image(0, 0, game.p2, (msg.charCodeAt(3) - 97));
             card.setScale(config.cardS);
             card.angle += -90;
 
-            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card,text ]);
+            var set = game.add.container((120 * x) - 40, (79 * y) + 4, [ card,words ]);
 
             set.setSize(card.width * config.cardS, card.height * config.cardS);
             set.health = msg[4];
+            set.fact = game.p2;
+            set.name = msg.charCodeAt(3) - 97
+            set.placed = true;
+            set.last.text = msg[5]
+
+            if(set.last.text != ' ')
+            {
+                set.first.setTint(0xff4a3d);
+            }
+
             set.setInteractive();
 
-            console.log(x,y)
             game.board[x - 2][y - 1] = set;
         }
 
@@ -486,6 +577,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             x = msg[1];
             y = msg[2];
             game.board[x - 2][y - 1].destroy();
+            game.board[x - 2][y - 1] = null;
         }
 
         else if(msg[0] == 'r')
@@ -501,8 +593,9 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
                         msg += ((x - 6) * -1) + 1;
                         msg += ((y  - 8) * -1);
                         msg += String.fromCharCode(game.board[x][y].name + 97)
-                        console.log(game.board[x][y].name)
+                        
                         msg += game.board[x][y].health;
+                        msg += game.board[x][y].last.text
 
                         game.conn.send(JSON.stringify(msg));
                     }
@@ -527,8 +620,9 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
                             msg += ((x - 6) * -1) + 1;
                             msg += ((y  - 8) * -1);
                             msg += String.fromCharCode(game.board[x][y].name + 97)
-                            console.log(game.board[x][y].name)
+                            
                             msg += game.board[x][y].health;
+                            msg += game.board[x][y].last.text
 
                             game.conn.send(JSON.stringify(msg));
                         }
@@ -542,7 +636,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             x = msg[1];
             y = msg[2];
                 
-            if(game.board[x - 2][y - 1].last.text == '')
+            if(game.board[x - 2][y - 1].last.text == ' ')
             {
                 game.board[x - 2][y - 1].last.text = '0';
             }
@@ -550,6 +644,18 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             game.board[x - 2][y - 1].last.text = parseInt(game.board[x - 2][y - 1].last.text) + 1;
             console.log(x,y)
             game.board[x - 2][y - 1].first.setTint(0xff4a3d)
+        }
+
+        else if (msg[0] == 'f')
+        {
+            if(msg[1] == "F")
+            {
+                game.facBtn1.destroy()
+            }
+
+            else{
+                game.facBtn2.destroy()
+            }
         }
     }
 
@@ -564,6 +670,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             msg += String.fromCharCode(gameObject.name + 97);
             console.log(gameObject.name)
             msg += gameObject.health;
+            msg += gameObject.last.text;
 
             game.conn.send(JSON.stringify(msg));
         }
@@ -595,6 +702,13 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             msg += y + 1;
             game.conn.send(JSON.stringify(msg));
         }
+
+        else if(action == 'f')
+        {
+            var msg = action;
+            msg += game.p1[0];
+            game.conn.send(JSON.stringify(msg))
+        }
     }
     
     function buildDeck(game, facName)
@@ -602,339 +716,338 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
         if (facName=="FF")
         {
 
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Brooklyn Blur'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Brooklyn Blur'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for brooklynblur
-        game.deckOfCards[0].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[0].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[0].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[0].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[0].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[0].ranged = "<?php echo $rows['ranged']?>"
-        game.deckOfCards[9]=game.deckOfCards[0]
-        game.deckOfCards[10]=game.deckOfCards[0]
-        game.deckOfCards[11]=game.deckOfCards[0]
-        game.deckOfCards[12]=game.deckOfCards[0]
-        game.deckOfCards[13]=game.deckOfCards[0]
+            //database call for brooklynblur
+            game.deckOfCards[0].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[0].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[0].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[0].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[0].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[0].ranged = "<?php echo $rows['ranged']?>"
+            game.deckOfCards[9]=game.deckOfCards[0]
+            game.deckOfCards[10]=game.deckOfCards[0]
+            game.deckOfCards[11]=game.deckOfCards[0]
+            game.deckOfCards[12]=game.deckOfCards[0]
+            game.deckOfCards[13]=game.deckOfCards[0]
 
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Minuteman'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Minuteman'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for minuteman
-        game.deckOfCards[1].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[1].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[1].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[1].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[1].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[1].ranged = "<?php echo $rows['ranged']?>"
-        game.deckOfCards[2]=game.deckOfCards[1]
-        game.deckOfCards[14]=game.deckOfCards[1]
-        game.deckOfCards[15]=game.deckOfCards[1]
-        game.deckOfCards[16]=game.deckOfCards[1]
-        game.deckOfCards[17]=game.deckOfCards[1]
+            //database call for minuteman
+            game.deckOfCards[1].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[1].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[1].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[1].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[1].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[1].ranged = "<?php echo $rows['ranged']?>"
+            game.deckOfCards[2]=game.deckOfCards[1]
+            game.deckOfCards[14]=game.deckOfCards[1]
+            game.deckOfCards[15]=game.deckOfCards[1]
+            game.deckOfCards[16]=game.deckOfCards[1]
+            game.deckOfCards[17]=game.deckOfCards[1]
 
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Riveteer'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Riveteer'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for riveteer
-        game.deckOfCards[3].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[3].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[3].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[3].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[3].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[3].ranged = "<?php echo $rows['ranged']?>"
-        game.deckOfCards[18]=game.deckOfCards[3]
-        game.deckOfCards[19]=game.deckOfCards[3]
-        game.deckOfCards[20]=game.deckOfCards[3]
-        game.deckOfCards[21]=game.deckOfCards[3]
-        game.deckOfCards[22]=game.deckOfCards[3]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Abraham'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for riveteer
+            game.deckOfCards[3].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[3].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[3].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[3].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[3].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[3].ranged = "<?php echo $rows['ranged']?>"
+            game.deckOfCards[18]=game.deckOfCards[3]
+            game.deckOfCards[19]=game.deckOfCards[3]
+            game.deckOfCards[20]=game.deckOfCards[3]
+            game.deckOfCards[21]=game.deckOfCards[3]
+            game.deckOfCards[22]=game.deckOfCards[3]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Abraham'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for abraham
-        game.deckOfCards[5].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[5].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[5].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[5].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[5].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[5].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Crushmore'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for abraham
+            game.deckOfCards[5].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[5].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[5].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[5].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[5].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[5].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Crushmore'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for crushmore
-        game.deckOfCards[6].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[6].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[6].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[6].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[6].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[6].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Liberty Belle'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for crushmore
+            game.deckOfCards[6].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[6].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[6].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[6].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[6].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[6].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Liberty Belle'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for liberty belle
-        game.deckOfCards[7].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[7].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[7].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[7].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[7].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[7].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Winged Wonder'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for liberty belle
+            game.deckOfCards[7].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[7].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[7].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[7].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[7].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[7].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Winged Wonder'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for winged wonder
-        game.deckOfCards[8].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[8].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[8].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[8].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[8].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[8].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Let Freedom Ring'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for winged wonder
+            game.deckOfCards[8].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[8].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[8].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[8].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[8].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[8].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Let Freedom Ring'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for let freedom ring
-        game.deckOfCards[23].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[23].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[24] = game.deckOfCards[23]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Justice For All'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for let freedom ring
+            game.deckOfCards[23].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[23].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[24] = game.deckOfCards[23]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Justice For All'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for justice for all
-        game.deckOfCards[25].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[25].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[26] = game.deckOfCards[25]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Cost of Freedom'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for justice for all
+            game.deckOfCards[25].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[25].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[26] = game.deckOfCards[25]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Cost of Freedom'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for cost of freedom
-        game.deckOfCards[27].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[27].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[28] = game.deckOfCards[27]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Shock & Awesome'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for cost of freedom
+            game.deckOfCards[27].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[27].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[28] = game.deckOfCards[27]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Shock & Awesome'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for shock & awesome
-        game.deckOfCards[29].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[29].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[30] = game.deckOfCards[29]
+            //database call for shock & awesome
+            game.deckOfCards[29].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[29].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[30] = game.deckOfCards[29]
 
-        //fort info
-        game.deckOfCards[4].name = "Hall of Freedom"
-        game.deckOfCards[4].type = "Fort"
-        game.deckOfCards[31] = game.deckOfCards[4]
-        game.deckOfCards[32] = game.deckOfCards[4]
+            //fort info
+            game.deckOfCards[4].name = "Hall of Freedom"
+            game.deckOfCards[4].type = "Fort"
+            game.deckOfCards[4].health = 8;
+            game.deckOfCards[31] = game.deckOfCards[4]
+            game.deckOfCards[32] = game.deckOfCards[4]
 
         }
+
         else
         {
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'El Niño'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'El Nino'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for el niño
-        game.deckOfCards[0].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[0].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[0].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[0].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[0].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[0].ranged = "<?php echo $rows['ranged']?>"
-        game.deckOfCards[9]=game.deckOfCards[0]
-        game.deckOfCards[10]=game.deckOfCards[0]
-        game.deckOfCards[11]=game.deckOfCards[0]
-        game.deckOfCards[12]=game.deckOfCards[0]
-        game.deckOfCards[13]=game.deckOfCards[0]
+            //database call for el niño
+            game.deckOfCards[0].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[0].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[0].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[0].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[0].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[0].ranged = "<?php echo $rows['ranged']?>"
+            game.deckOfCards[9]=game.deckOfCards[0]
+            game.deckOfCards[10]=game.deckOfCards[0]
+            game.deckOfCards[11]=game.deckOfCards[0]
+            game.deckOfCards[12]=game.deckOfCards[0]
+            game.deckOfCards[13]=game.deckOfCards[0]
 
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Piñata'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Pinata'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for piñata
-        game.deckOfCards[1].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[1].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[1].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[1].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[1].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[1].ranged = "<?php echo $rows['ranged']?>"
-        game.deckOfCards[2]=game.deckOfCards[1]
-        game.deckOfCards[14]=game.deckOfCards[1]
-        game.deckOfCards[15]=game.deckOfCards[1]
-        game.deckOfCards[16]=game.deckOfCards[1]
-        game.deckOfCards[17]=game.deckOfCards[1]
+            //database call for piñata
+            game.deckOfCards[1].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[1].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[1].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[1].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[1].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[1].ranged = "<?php echo $rows['ranged']?>"
+            game.deckOfCards[2]=game.deckOfCards[1]
+            game.deckOfCards[14]=game.deckOfCards[1]
+            game.deckOfCards[15]=game.deckOfCards[1]
+            game.deckOfCards[16]=game.deckOfCards[1]
+            game.deckOfCards[17]=game.deckOfCards[1]
 
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Margarita'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Margarita'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for margarita
-        game.deckOfCards[3].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[3].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[3].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[3].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[3].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[3].ranged = "<?php echo $rows['ranged']?>"
-        game.deckOfCards[18]=game.deckOfCards[3]
-        game.deckOfCards[19]=game.deckOfCards[3]
-        game.deckOfCards[20]=game.deckOfCards[3]
-        game.deckOfCards[21]=game.deckOfCards[3]
-        game.deckOfCards[22]=game.deckOfCards[3]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Quetzalcoatl'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for margarita
+            game.deckOfCards[3].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[3].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[3].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[3].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[3].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[3].ranged = "<?php echo $rows['ranged']?>"
+            game.deckOfCards[18]=game.deckOfCards[3]
+            game.deckOfCards[19]=game.deckOfCards[3]
+            game.deckOfCards[20]=game.deckOfCards[3]
+            game.deckOfCards[21]=game.deckOfCards[3]
+            game.deckOfCards[22]=game.deckOfCards[3]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Quetzalcoatl'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for quetzalcoatl
-        game.deckOfCards[5].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[5].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[5].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[5].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[5].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[5].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'El Muerto'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for quetzalcoatl
+            game.deckOfCards[5].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[5].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[5].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[5].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[5].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[5].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'El Muerto'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for el muerto
-        game.deckOfCards[6].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[6].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[6].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[6].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[6].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[6].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Doom Quixote'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for el muerto
+            game.deckOfCards[6].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[6].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[6].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[6].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[6].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[6].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Doom Quixote'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for doom quixote
-        game.deckOfCards[7].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[7].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[7].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[7].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[7].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[7].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Matadora'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for doom quixote
+            game.deckOfCards[7].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[7].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[7].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[7].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[7].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[7].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Matadora'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for matadora
-        game.deckOfCards[8].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[8].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[8].hit_dice = "<?php echo $rows['hit_dice']?>"
-        game.deckOfCards[8].health = "<?php echo $rows['health']?>"
-        game.deckOfCards[8].cost = "<?php echo $rows['cost']?>"
-        game.deckOfCards[8].ranged = "<?php echo $rows['ranged']?>"
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Hispanic Panic'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for matadora
+            game.deckOfCards[8].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[8].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[8].hit_dice = "<?php echo $rows['hit_dice']?>"
+            game.deckOfCards[8].health = "<?php echo $rows['health']?>"
+            game.deckOfCards[8].cost = "<?php echo $rows['cost']?>"
+            game.deckOfCards[8].ranged = "<?php echo $rows['ranged']?>"
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Hispanic Panic'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for hispanic panic
-        game.deckOfCards[23].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[23].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[24] = game.deckOfCards[23]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Cinco De Mayo'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for hispanic panic
+            game.deckOfCards[23].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[23].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[24] = game.deckOfCards[23]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Cinco De Mayo'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for cinco de mayo
-        game.deckOfCards[25].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[25].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[26] = game.deckOfCards[25]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Just Juan More'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for cinco de mayo
+            game.deckOfCards[25].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[25].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[26] = game.deckOfCards[25]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Just Juan More'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for just juan more
-        game.deckOfCards[27].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[27].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[28] = game.deckOfCards[27]
-        
-        <?php
-            $sql="SELECT * FROM cards WHERE cards.name = 'Mexican Mayhem'";
-            $result=$mysqli->query($sql);
-			$rows=$result->fetch_assoc();
-        ?>
+            //database call for just juan more
+            game.deckOfCards[27].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[27].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[28] = game.deckOfCards[27]
+            
+            <?php
+                $sql="SELECT * FROM cards WHERE cards.name = 'Mexican Mayhem'";
+                $result=$mysqli->query($sql);
+                $rows=$result->fetch_assoc();
+            ?>
 
-        //database call for shock & awesome
-        game.deckOfCards[29].name = "<?php echo $rows['name']?>"
-        game.deckOfCards[29].type = "<?php echo $rows['type']?>"
-        game.deckOfCards[30] = game.deckOfCards[29]
+            //database call for shock & awesome
+            game.deckOfCards[29].name = "<?php echo $rows['name']?>"
+            game.deckOfCards[29].type = "<?php echo $rows['type']?>"
+            game.deckOfCards[30] = game.deckOfCards[29]
 
-        //fort info
-        game.deckOfCards[4].name = "Fiesta Fortress"
-        game.deckOfCards[4].type = "Fort"
-        game.deckOfCards[31] = game.deckOfCards[4]
-        game.deckOfCards[32] = game.deckOfCards[4]
-
-//comment
-        }
-        
-              
+            //fort info
+            game.deckOfCards[4].name = "Fiesta Fortress"
+            game.deckOfCards[4].type = "Fort"
+            game.deckOfCards[4].health = 8;
+            game.deckOfCards[31] = game.deckOfCards[4]
+            game.deckOfCards[32] = game.deckOfCards[4]
+        }              
     }
     </script>
 
