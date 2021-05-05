@@ -63,6 +63,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
     function create ()
     {
+        this.isTurn = false;
         this.info = null
         this.prev = null
         this.originX
@@ -139,7 +140,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
     function pickFaction(game)
     {        
-        game.conn = new WebSocket('ws://192.168.0.182:1337');
+        game.conn = new WebSocket('ws://192.168.0.182:1338');
 
         //establish connection
         game.conn.onopen = function(e) 
@@ -215,175 +216,178 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
     function movement(game)
     {
-        //moving the card
-        game.input.on('drag', function (pointer, gameObject, dragX, dragY) 
-        {
-            gameObject.x = dragX;
-            gameObject.y = dragY;
-        });
-
-        //movement ends
-        game.input.on('dragend', function (pointer, gameObject)
-        {
-            //check for energy overlap
-            if(checkOverlap(gameObject, game.discard) && gameObject.placed == false)
+    
+            //moving the card
+            game.input.on('drag', function (pointer, gameObject, dragX, dragY) 
             {
-                gameObject.destroy();
-                game.hand[gameObject.val] = null;
-                game.energy += 1;
-                game.discard.text = game.energy;
-                    
-                x = Math.round((game.originX) / 120);
-                y = Math.round((game.originY) / 79);
-                game.board[x - 2][y - 1] = null;
-            }
+                gameObject.x = dragX;
+                gameObject.y = dragY;
+            });
 
-            //if the card isnt on the board or energy
-            else if(!checkOverlap(gameObject, game.bk))
+            //movement ends
+            game.input.on('dragend', function (pointer, gameObject)
             {
-                gameObject.x = game.originX;
-                gameObject.y = game.originY;
-            }
-
-            //getting placed on the board
-            else 
-            {
-                game.hand[gameObject.val] = null;
-
-                console.log(gameObject.type)
-                if(gameObject.type == "Event")
+                //check for energy overlap
+                if(checkOverlap(gameObject, game.discard) && gameObject.placed == false && game.isTurn == true)
                 {
                     gameObject.destroy();
-                }
-
-                else
-                {
-                    var x = Math.round((gameObject.x) / 120);
-                    var y = Math.round((gameObject.y) / 79);
-
-                    //spot was empty
-                    if(game.board[x - 2][y - 1] == null && (gameObject.placed == true || (gameObject.placed == false && gameObject.cost <= game.energy)))
-                    {
-                        game.board[x - 2][y - 1] = gameObject;
-                        gameObject.x = 120 * x - 40;
-                        gameObject.y = 79 * y + 4;
-                        boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'p')
-                        
-                        x = Math.round((game.originX) / 120);
-                        y = Math.round((game.originY) / 79);
-
-                        if(gameObject.placed == true)
-                        {
-                            game.board[x - 2][y - 1] = null;
-                            boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
-                        
-                        }
-                        
-                        else
-                        {
-                            gameObject.placed = true;
-                            game.energy -= gameObject.cost;
-                            game.discard.text = game.energy;                
-                        }
-                    }        
-
-                    //spot was filled
-                    else
-                    {        
-                        gameObject.x = game.originX;
-                        gameObject.y = game.originY;
-                    }
-                }
-            }
-        });
-
-        //set origin of card
-        game.input.on('dragstart', function (pointer, gameObject)
-        {
-            game.originX = gameObject.x;
-            game.originY = gameObject.y;
-        });
-
-        //check if clicked on
-        let lastTime = 0;
-        game.input.on('gameobjectdown', function (pointer, gameObject)
-        {
-            let clickDelay = game.time.now - lastTime;
-            lastTime = game.time.now
-
-            if(pointer.rightButtonDown() && gameObject.placed == true)
-            {
-                x = Math.round((gameObject.x) / 120);
-                y = Math.round((gameObject.y) / 79);
-                gameObject.health--;
-                gameObject.first.setTint(0xff4a3d)
-                
-                console.log(gameObject.last.text)
-                if(gameObject.last.text == ' ')
-                {
-                    gameObject.last.text = '0';
-                }
-                gameObject.last.text = parseInt(gameObject.last.text) + 1;
-                console.log(gameObject.last.text)
-
-                boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'd')
-
-                console.log(gameObject.health)
-                if(gameObject.health == 0)
-                {
-                    if(game.prev == gameObject){game.prev = null}
-                    game.originX = gameObject.x;
-                    game.originY = gameObject.y;
-                    gameObject.destroy();
+                    game.hand[gameObject.val] = null;
                     game.energy += 1;
                     game.discard.text = game.energy;
-                    game.board[x - 2][y -1] = null;
-                    boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
+                        
+                    x = Math.round((game.originX) / 120);
+                    y = Math.round((game.originY) / 79);
+                    game.board[x - 2][y - 1] = null;
                 }
-            }
 
-            else if(clickDelay < 350)
-            {
-                if(game.info == null)
+                //if the card isnt on the board or energy
+                else if(!checkOverlap(gameObject, game.bk) && game.isTurn == false)
                 {
-                    var card = game.add.image(0, 0, gameObject.fact, gameObject.name);
-                    game.info = game.add.container(500, 350, [ card ]);
-                    card.angle -= 90;
-                    game.info.setSize(card.width * .5, card.height * .5);
-                    game.info.setInteractive();
+                    gameObject.x = game.originX;
+                    gameObject.y = game.originY;
                 }
-            }
 
-            else if(clickDelay > 350 && gameObject.placed == true)
+                //getting placed on the board
+                else 
+                {
+
+                    console.log(gameObject.type)
+                    if(gameObject.type == "Event" && game.isTurn == true)
+                    {
+                        gameObject.destroy();
+                        game.hand[gameObject.val] = null;
+                    }
+
+                    else
+                    {
+                        var x = Math.round((gameObject.x) / 120);
+                        var y = Math.round((gameObject.y) / 79);
+
+                        //spot was empty
+                        if(game.board[x - 2][y - 1] == null && (gameObject.placed == true || (gameObject.placed == false && gameObject.cost <= game.energy)) && game.isTurn == true)
+                        {
+                            game.board[x - 2][y - 1] = gameObject;
+                            gameObject.x = 120 * x - 40;
+                            gameObject.y = 79 * y + 4;
+                            boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'p')
+                            
+                            x = Math.round((game.originX) / 120);
+                            y = Math.round((game.originY) / 79);
+
+                            if(gameObject.placed == true)
+                            {
+                                game.board[x - 2][y - 1] = null;
+                                boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
+                            
+                            }
+                            
+                            else
+                            {
+                                gameObject.placed = true;
+                                game.energy -= gameObject.cost;
+                                game.discard.text = game.energy;
+                                game.hand[gameObject.val] = null;                
+                            }
+                        }        
+
+                        //spot was filled
+                        else
+                        {        
+                            gameObject.x = game.originX;
+                            gameObject.y = game.originY;
+                        }
+                    }
+                }
+            });
+
+            //set origin of card
+            game.input.on('dragstart', function (pointer, gameObject)
             {
-                if(game.prev != null)
+                game.originX = gameObject.x;
+                game.originY = gameObject.y;
+            });
+
+            //check if clicked on
+            let lastTime = 0;
+            game.input.on('gameobjectdown', function (pointer, gameObject)
+            {
+                let clickDelay = game.time.now - lastTime;
+                lastTime = game.time.now
+
+                if(pointer.rightButtonDown() && gameObject.placed == true && game.isTurn == true)
+                {
+                    x = Math.round((gameObject.x) / 120);
+                    y = Math.round((gameObject.y) / 79);
+                    gameObject.health--;
+                    gameObject.first.setTint(0xff4a3d)
+                    
+                    console.log(gameObject.last.text)
+                    if(gameObject.last.text == ' ')
+                    {
+                        gameObject.last.text = '0';
+                    }
+                    gameObject.last.text = parseInt(gameObject.last.text) + 1;
+                    console.log(gameObject.last.text)
+
+                    boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'd')
+
+                    console.log(gameObject.health)
+                    if(gameObject.health == 0)
+                    {
+                        if(game.prev == gameObject){game.prev = null}
+                        game.originX = gameObject.x;
+                        game.originY = gameObject.y;
+                        gameObject.destroy();
+                        game.energy += 1;
+                        game.discard.text = game.energy;
+                        game.board[x - 2][y -1] = null;
+                        boardUpdateSend((x - 6) * -1, (y - 8) * -1, gameObject, game, 'k')
+                    }
+                }
+
+                else if(clickDelay < 350 && game.isTurn == true)
+                {
+                    if(game.info == null)
+                    {
+                        var card = game.add.image(0, 0, gameObject.fact, gameObject.name);
+                        game.info = game.add.container(500, 350, [ card ]);
+                        card.angle -= 90;
+                        game.info.setSize(card.width * .5, card.height * .5);
+                        game.info.setInteractive();
+                    }
+                }
+
+                else if(clickDelay > 350 && gameObject.placed == true && game.isTurn == true)
+                {
+                    if(game.prev != null)
+                    {
+                        if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
+                        else{game.prev.first.setTint(0xff4a3d)}
+                    }
+
+                    gameObject.first.setTint(0x7878ff)
+                    game.prev = gameObject
+                }
+            });
+
+            game.input.keyboard.on('keydown_SPACE', function(event)
+            {
+                if(game.info != null)
+                {
+                    game.info.destroy();
+                    if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
+                    else{game.prev.first.setTint(0xff4a3d)}
+                    game.info = null;
+                }   
+
+                else if(game.prev != null)
                 {
                     if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
                     else{game.prev.first.setTint(0xff4a3d)}
+                    prev = null;
                 }
-
-                gameObject.first.setTint(0x7878ff)
-                game.prev = gameObject
-            }
-        });
-
-        game.input.keyboard.on('keydown_SPACE', function(event)
-        {
-            if(game.info != null)
-            {
-                game.info.destroy();
-                if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
-                else{game.prev.first.setTint(0xff4a3d)}
-                game.info = null;
-            }   
-
-            else if(game.prev != null)
-            {
-                if(game.prev.last.text == ' ') {game.prev.first.clearTint()}
-                else{game.prev.first.setTint(0xff4a3d)}
-                prev = null;
-            }
-        })
+            })
+        
     }
 
     function setUp(game)
@@ -495,6 +499,8 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 
         endBtn.on('pointerdown', function () {
 
+            game.isTurn = false;
+            game.conn.send(JSON.stringify('2'));
             fillHand(game);
 
         });
@@ -528,7 +534,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
                 var dmg = 0;
                 for(x = 0; x < game.prev.dice; x++)
                 {
-                    if(Math.floor(Math.random() * 6) + 1 > 2)
+                    if(Math.round(Math.random() * 6) + 1 > 2)
                     {
                         dmg += 1;
                     }
@@ -609,6 +615,12 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             {
                 game.conn.send(JSON.stringify('r'));
                 
+                if(Math.round(Math.random() * 1) == 0){game.isTurn = true}
+               
+                else {game.conn.send(JSON.stringify('2'));}
+
+                console.log(game.isTurn)
+     
                 for(x = 0; x < 6; x++)
                 {
                     for(y = 0; y < 8; y++)
@@ -656,6 +668,11 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             else{
                 game.facBtn2.destroy()
             }
+        }
+
+        else if(msg[0] == '2')
+        {
+            game.isTurn = true;
         }
     }
 
@@ -1048,6 +1065,11 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
             game.deckOfCards[31] = game.deckOfCards[4]
             game.deckOfCards[32] = game.deckOfCards[4]
         }              
+    }
+
+    function popUp()
+    {
+
     }
     </script>
 

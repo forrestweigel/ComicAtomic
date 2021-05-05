@@ -60,7 +60,7 @@ if($_POST['Password'] == $_POST['Password2'])
 	$mysqli->close();
 	
 	$_SESSION["username"]=$User;	
-	header('Location: Lobby\NodejsWebApp1\NodejsWebApp1\public\index.html');
+	Header('Location: lobby\index.php');
 }
 
 

@@ -29,7 +29,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 	
 	if($result->num_rows == 0)
 	{
-		header('Location: index.php?msg=Username%20is%20incorrect');
+		header('Location: index.php?msg=Username%20not%20found');
 		exit();
 	}
 	
@@ -38,7 +38,7 @@ $mysqli = new mysqli($dbServer,$dbUser,$dbPass,$db);
 	if (password_verify($_POST['Password'],$row[0])) 
 	{
 		$_SESSION["username"] = $User;
-		Header('Location: Lobby\NodejsWebApp1\NodejsWebApp1\public\index.html');
+		Header('Location: lobby\index.php');
 	}
 	
 	else 

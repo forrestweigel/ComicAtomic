@@ -4,67 +4,41 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap - Prebuilt Layout</title>
+    <title>Lobby</title>
     <!-- <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script> -->
     <!-- Bootstrap -->
     <link href="css/bootstrap-4.4.1.css" rel="stylesheet">
 
 </head>
-  <body>
-   <div class="jumbotron">  </div>    
-      <br>
-      <hr>
-      <br> 
-      <div class ="row">
-          <div class="col-md-6 text-center col-xl-4">
-             <div class="card">
-                <div class="card-body">
-                   <h3>&nbsp;</h3>
-                  
-                   <p><button type="button" class="btn btn-success btn-md" id="create" onclick="create();">Create Game</button></p>
-                   <button type="button" class="btn btn-success btn-md" id="join">&nbsp&nbsp Join Game&nbsp</button>
-                </div>
-             </div>
-          </div>
-		   
-		   <div class="col-md-6 text-center col-xl-4">
-             <div class="card">
-				  <h3>Active Users&nbsp;</h3>
-                <div class="card-body" id="users">
-                   
-                    
+   <body>
+      <div class="jumbotron">  </div>    
+         <div class ="row">
+            <div class="col-md-6 text-center col-xl-4">
+               <div class="card">
+                  <div class="card-body">
+                     <h3>&nbsp;</h3>
+                     
+                     <p><button type="button" class="btn btn-success btn-md" id="create">Create Game</button></p>
+                     <button type="button" class="btn btn-success btn-md" id="join">&nbsp&nbsp Join Game&nbsp</button>
+                  </div>
                </div>
-             </div>
-          </div>
-		   
-		   <div class="col-md-6 text-center col-xl-4">
-             <div class="card">
-				 <h3>Games&nbsp;</h3>
-                <div class="card-body" id = "games">
-                    <select class="form-select" aria-label="Default select example" id="gamelist">
-                        
-                    </select>
-                </div>
-				  
-             </div>
-          </div>
-		   
-		   
-		   
-		   
-      </div>
-      <br>
-      <hr>
-      <div class="row">
-          <div class="text-center col-lg-6 offset-lg-3">
-             <h4>Footer </h4>
-             <p>Copyright &copy; 2020 &middot; All Rights Reserved &middot; <a href="#" >My Website</a></p>
-          </div>
-      </div>
+            </div>
+            
+            <div class="col-md-6 text-center col-xl-4">
+               <div class="card">
+               <h3>Games&nbsp;</h3>
+                  <div class="card-body" id = "games">
+                     <select class="form-select" aria-label="Default select example" id="gamelist">
+                           
+                     </select>
+                  </div>			  
+               </div>
+            </div> 
+         </div>
+
       <script> 
 
-         //socket server
-         var conn = new WebSocket('ws://172.16.216.210:1337');
+         var conn = new WebSocket('ws://localhost:1337');
 
          conn.onopen = function(e) 
          {
@@ -73,7 +47,8 @@
    
          conn.onmessage = function(e) 
          {
-            var msg = JSON.parse(e.data);           
+            var msg = JSON.parse(e.data);  
+            console.log(msg)         
             
             if(msg.command == "create")
             {
@@ -88,8 +63,6 @@
 
             else if(msg.command == "join")
             {
-               console.log(msg.id);
-               console.log(msg.id2);
                var item = document.getElementById(msg.id);
 
                var remove = document.getElementById("gamelist");
@@ -101,49 +74,28 @@
 
             else if(msg.command == 'start')
             {
-               window.location.href = "blank.html"; 
+               window.location.href = "/comicatomic/game/index.php"; 
             }
-
-            else if(msg.command == 'packet')
             
          };
 
       </script>
+         <script type="application/javascript">
 
-      <script type="application/javascript">
+         document.getElementById("join").addEventListener("click", function () 
+         {
+            var sel = document.getElementById('gamelist').value;
+            conn.send(JSON.stringify({command: "join", id: sel}));                 
+         });
 
-   document.getElementById("join").addEventListener("click", function () 
-   {
-      //var msg = "one";
-      var sel = document.getElementById('gamelist').value;
-      conn.send(JSON.stringify({command: "join", id: sel}));
-      //conn.send(JSON.stringify(msg));
-      //either manipulate html here or inside the socket onmessagereceived code                  
-   });
-
-   document.getElementById("create").addEventListener("click", function () 
-   {
-      //var msg = "one";  
-      //need users own id here from variable in message
-      conn.send(JSON.stringify({command: "create", id: ''}));
-      //either manipulate html here or inside the socket onmessagereceived co             
-   });
-
-function myMethod( )
-{
-   var msg = "update";
-
-   conn.send(JSON.stringify(msg));
-}
-
- </script>
-    
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
-    <script src="jquery-3.4.1.min.js"></script>
-
-    <!-- Include all compiled plugins (below), or include individual files as needed --> 
-    
-    <script src="jspopper.min.js"></script>
-    <script src="bootstrap-4.4.1.js"></script>
-  </body>
+         document.getElementById("create").addEventListener("click", function () 
+         {
+            var button = document.getElementById('join');
+            button.disabled = true;
+            var button = document.getElementById('create');
+            button.disabled = true;
+            conn.send(JSON.stringify({command: "create", id: ''}));          
+         });
+      </script>
+   </body>
 </html>

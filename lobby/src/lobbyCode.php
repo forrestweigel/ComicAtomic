@@ -110,10 +110,6 @@ class lobbyCode implements MessageComponentInterface {
                 $user2 = $data->id2;
                 $this->onJoin($user1,$user2);
                 break;
-
-            case "packet":
-                
-                break;
         }
     }
 
